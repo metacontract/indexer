@@ -12,6 +12,14 @@ enum TypeKind {
     NaiveStruct,
     Primitive,
 }
+impl TypeKind {
+    fn is_iterish(&self) -> bool {
+        match self {
+            TypeKind::Mapping | TypeKind::Array => true,
+            TypeKind::NaiveStruct | TypeKind::Primitive => false,
+        }
+    }    
+}
 
 struct Compiler {
     solc_path: String,
@@ -78,28 +86,44 @@ struct Extractor {
 impl Extractor {
     fn new() -> Self {
         let compiler = Compiler::new("solc".to_string());
-        let registry = Registry::new(HashMap::new());
-        let executor = Executor::new();
-        let perf_expression_evaluator = PerfExpressionEvaluator::new();
+        let storage_layout = compiler.prepare_storage_layout().unwrap();
+        let registry = Registry::new(HashMap::new(), storage_layout);
+        let executor = Executor::new(registry.clone());
 
         Self {
             compiler,
             registry,
             initial_members: Vec::new(),
-            executor,
-            perf_expression_evaluator,
+            executor
         }
     }
 
     fn init_members_from_compiler(&mut self) {
         let base_slots = self.compiler.prepare_base_slots().unwrap();
-        let storage_layout = self.compiler.prepare_storage_layout().unwrap();
 
         // Create Member objects from base_slots and storage_layout
-        // ...
+        for (name, slot_info) in base_slots.as_object().unwrap() {
+            let type_kind = match slot_info["type"].as_str().unwrap() {
+                "t_mapping" => TypeKind::Mapping,
+                "t_array" => TypeKind::Array,
+                "t_struct" => TypeKind::NaiveStruct,
+                _ => TypeKind::Primitive,
+            };
 
-        // Store the created Member objects in self.initial_members
-        // ...
+            let value_type = slot_info["valueType"].as_str().unwrap().to_string();
+            let relative_slot = slot_info["slot"].as_str().unwrap().to_string();
+
+            let member = Member::new(
+                name.to_string(),
+                type_kind,
+                value_type,
+                relative_slot,
+                self.clone(),
+                None, // Initialize iter as None, it will be populated later if needed
+            );
+
+            self.initial_members.push(Box::new(member));
+        }
     }
 
     fn listen(&mut self) {
@@ -127,42 +151,36 @@ struct PerfConfigItem {
     from: Option<String>,
     to: Option<String>,
 }
-
-struct IteratorItem {
+struct Member {
     name: String,
     type_kind: TypeKind,
     value_type: String,
-    struct_index: usize,
+    offset: usize,
     relative_slot: String,
-    belongs_to: Option<Executable>,
-    mapping_key: Option<String>,
     absolute_slot: Option<String>,
+    belongs_to: Option<Executable>,
+    iter: Option<IteratorMeta>,
 }
 
-impl IteratorItem {
+impl Member {
     fn new(
         name: String,
         type_kind: TypeKind,
         value_type: String,
-        struct_index: usize,
         relative_slot: String,
         belongs_to: Executable,
-        mapping_key: Option<String>,
+        iter: Option<IteratorMeta>,
     ) -> Self {
         Self {
             name,
             type_kind,
             value_type,
-            struct_index,
             relative_slot,
             belongs_to: Some(belongs_to),
-            mapping_key,
             absolute_slot: None,
+            iter,
         }
     }
-
-    // Implement other methods for IteratorItem
-    // ...
 }
 
 struct IteratorMeta {
@@ -181,46 +199,59 @@ impl IteratorMeta {
     fn set_to(&mut self, to: usize) {
         self.to = to;
     }
-
-    // Implement other methods for IteratorMeta
-    // ...
 }
 
-struct Member {
+struct IteratorItem {
     name: String,
     type_kind: TypeKind,
     value_type: String,
-    struct_index: usize,
-    offset: usize,
     relative_slot: String,
-    absolute_slot: Option<String>,
     belongs_to: Option<Executable>,
+    absolute_slot: Option<String>,
     iter: Option<IteratorMeta>,
+    mapping_key: Option<String>,
 }
 
-impl Member {
-    // Implement methods for Member
-    // ...
+impl IteratorItem {
+    fn new(
+        name: String,
+        type_kind: TypeKind,
+        value_type: String,
+        relative_slot: String,
+        belongs_to: Executable,
+        mapping_key: Option<String>,
+        iter: Option<IteratorMeta>,
+    ) -> Self {
+        Self {
+            name,
+            type_kind,
+            value_type,
+            relative_slot,
+            belongs_to: Some(belongs_to),
+            mapping_key,
+            absolute_slot: None,
+            iter,
+        }
+    }
 }
+
 
 struct Executor {
     queue_per_step: Vec<Vec<Executable>>,
     executed_per_step: Vec<Vec<Executable>>,
+    registry: Registry,
 }
 
 impl Executor {
-    fn new() -> Self {
+    fn new(registry: Registry) -> Self {
         Self {
             queue_per_step: Vec::new(),
             executed_per_step: Vec::new(),
+            registry,
         }
     }
 
-    fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize, registry: &mut Registry, perf_expression_evaluator: &mut PerfExpressionEvaluator) {
-        // Calculate absolute slot for each queued executable
-        for executable in &mut self.queue_per_step[step] {
-            executable.calculate_abs_slot();
-        }
+    fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize) {
 
         // Get values by slots from EthCall
         let values = EthCall::get_values_by_slots(&self.queue_per_step[step]);
@@ -231,14 +262,14 @@ impl Executor {
         // Process each executed executable
         for executable in &mut self.executed_per_step[step] {
             // Get the performance configuration item for the executable
-            let perf_config_item = registry.get_perf_config_item(executable.get_edfs());
+            let perf_config_item = self.registry.get_perf_config_item(executable.get_edfs());
 
             // Set the value for the executable based on the performance configuration item
             executable.set_value(perf_config_item);
 
             if executable.get_type_kind() == TypeKind::Primitive {
                 // If the executable is a primitive, push it to the output
-                registry.set_output(executable.get_edfs(), executable.clone());
+                self.registry.set_output(executable.get_edfs(), executable.clone());
             } else {
                 // If the executable is a non-primitive (NaiveStruct, Array, Mapping)
 
@@ -257,12 +288,12 @@ impl Executor {
                         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
 
                         if let Some(from_expr) = from_expression {
-                            let parsed_from = perf_expression_evaluator.eval(from_expr);
+                            let parsed_from = PerfExpressionEvaluator::eval(from_expr);
                             iter.set_from(parsed_from);
                         }
 
                         if let Some(to_expr) = to_expression {
-                            let parsed_to = perf_expression_evaluator.eval(to_expr);
+                            let parsed_to = PerfExpressionEvaluator::eval(to_expr);
                             iter.set_to(parsed_to);
                         }
 
@@ -304,13 +335,16 @@ impl Executor {
 struct Registry {
     perf_config_items: HashMap<String, PerfConfigItem>,
     output_flatten: HashMap<String, Executable>,
+    ast_node: ASTNode,
 }
 
 impl Registry {
-    fn new(perf_config_items: HashMap<String, PerfConfigItem>) -> Self {
+    fn new(perf_config_items: HashMap<String, PerfConfigItem>, storage_layout: Value) -> Self {
+        let ast_node = ASTNode::from_storage_layout(storage_layout);
         Self {
             perf_config_items,
             output_flatten: HashMap::new(),
+            ast_node,
         }
     }
 
@@ -329,27 +363,83 @@ impl Registry {
     fn get_perf_config_item(&self, edfs: String) -> Option<&PerfConfigItem> {
         self.perf_config_items.get(&edfs)
     }
+
+    fn get_node(&self, edfs: &str) -> Option<&Node> {
+        self.ast_node.get_node(edfs)
+    }
+}
+
+struct Node {
+    label: String,
+    members: Vec<Node>,
+    offset: usize,
+    slot: String,
+    node_type: String,
+}
+struct ASTNode {
+    nodes: HashMap<String, Node>,
+}
+
+impl ASTNode {
+    fn from_storage_layout(storage_layout: Value) -> Self {
+        let mut nodes = HashMap::new();
+        let contracts = storage_layout["contracts"].as_object().unwrap();
+        for (contract_name, contract) in contracts {
+            let contract_object = contract.as_object().unwrap();
+            let storage_layout = contract_object["storageLayout"].as_object().unwrap();
+            let storage = storage_layout["storage"].as_array().unwrap();
+            for item in storage {
+                let label = item["label"].as_str().unwrap().to_string();
+                let offset = item["offset"].as_u64().unwrap() as usize;
+                let slot = item["slot"].as_str().unwrap().to_string();
+                let node_type = item["type"].as_str().unwrap().to_string();
+                let members = Self::parse_members(&storage_layout["types"], &node_type);
+                let node = Node { label, members, offset, slot, node_type };
+                let edfs = format!("{}.{}", contract_name, label);
+                nodes.insert(edfs, node);
+            }
+        }
+        Self { nodes }
+    }
+
+    fn parse_members(types: &Value, node_type: &str) -> Vec<Node> {
+        let mut members = Vec::new();
+        if let Some(node_type_value) = types[node_type].as_object() {
+            if let Some(node_members) = node_type_value["members"].as_array() {
+                for member in node_members {
+                    let label = member["label"].as_str().unwrap().to_string();
+                    let offset = member["offset"].as_u64().unwrap() as usize;
+                    let slot = member["slot"].as_str().unwrap().to_string();
+                    let member_type = member["type"].as_str().unwrap().to_string();
+                    let member_node = Node {
+                        label,
+                        members: Self::parse_members(types, &member_type),
+                        offset,
+                        slot,
+                        node_type: member_type,
+                    };
+                    members.push(member_node);
+                }
+            }
+        }
+        members
+    }
+
+    fn get_node(&self, edfs: &str) -> Option<&Node> {
+        self.nodes.get(edfs)
+    }
 }
 
 struct PerfExpressionEvaluator;
 
 impl PerfExpressionEvaluator {
-    fn new() -> Self {
-        Self
-    }
-
     fn eval(&self, expression: String) -> usize {
-        // Evaluate the performance expression and return the result
-        // ...
-        0
+        // TODO: A very good parser 
     }
 }
 
-trait BelongsTo {}
-
-impl BelongsTo for Member {}
-
 trait Executable {
+    fn is_iterish(&self) -> bool
     fn calculate_abs_slot(&mut self) -> String;
     fn get_edfs(&self) -> String;
     fn get_type_and_name(&self) -> String;
@@ -362,12 +452,53 @@ trait Executable {
     fn get_abs_slot(&self) -> Option<String>;
     fn get_value(&self) -> Option<String>;
     fn set_value(&mut self, value: Option<&PerfConfigItem>);
+    fn get_belongs_to(&self) -> Option<&Executable>;
 }
 
 impl Executable for Member {
+    fn is_iterish(&self) -> bool {
+        self.type_kind.is_iterish
+    }
+
+
+    fn get_edfs(&self) -> String {
+        // Implement the logic to get the EDFS for a Member
+        // ...
+    }
+
+    fn get_type_and_name(&self) -> String {
+        // Implement the logic to get the type and name for a Member
+        // ...
+    }
+
+    fn get_type_kind(&self) -> TypeKind {
+        self.type_kind.clone()
+    }
+
+    fn get_iter(&self) -> Option<&IteratorMeta> {
+        self.iter.as_ref()
+    }
+
+    fn get_iter_mut(&mut self) -> Option<&mut IteratorMeta> {
+        self.iter.as_mut()
+    }
+
+    fn get_abs_slot(&self) -> Option<String> {
+        self.absolute_slot.clone()
+    }
+
+    fn get_value(&self) -> Option<String> {
+        self.value.clone()
+    }
+
     fn increment_step(&mut self) {
         self.step += 1;
     }
+
+    fn get_belongs_to(&self) -> Option<&Executable> {
+        self.belongs_to.as_ref()
+    }
+
     fn enqueue_execution(&self) {
         self.registry.queue_per_step.insert(self.step, self.clone_box());
     }
@@ -387,21 +518,64 @@ impl Executable for Member {
         self.absolute_slot.as_ref().unwrap().to_string()
     }
     fn get_children(&self) -> Option<Vec<Box<dyn Executable>>> {
-        if let Some(iter) = &self.iter {
+        if self.is_iterish() && self.iter.as_ref().map(|i| i.to).is_some() {
             let mut children = Vec::new();
-            for i in iter.from..iter.to {
-                let item = IteratorItem::new(
-                    format!("{}.{}", self.name, i),
-                    iter.items[i].type_kind.clone(),
-                    iter.items[i].value_type.clone(),
-                    iter.items[i].struct_index,
-                    iter.items[i].relative_slot.clone(),
-                    self.clone_box(),
-                    iter.items[i].mapping_key.clone(),
-                );
-                item.increment_step();
-                item.calculate_abs_slot();
-                children.push(Box::new(item));
+            if let Some(iter) = &self.iter {
+                for i in iter.from..iter.to.unwrap() {
+                    let item = IteratorItem::new(
+                        format!("{}.{}", self.name, i),
+                        iter.items[i].type_kind.clone(),
+                        iter.items[i].value_type.clone(),
+                        iter.items[i].relative_slot.clone(),
+                        self.clone_box(),
+                        iter.items[i].mapping_key.clone(),
+                        if iter.items[i].is_iterish() {
+                            Some(iter.clone())
+                        } else {
+                            None
+                        },
+                    );
+                    item.increment_step();
+                    item.absolute_slot = item.calculate_abs_slot();
+                    children.push(Box::new(item));
+                }
+            }
+            Some(children)
+        } else if self.type_kind == TypeKind::NaiveStruct {
+            if let Some(ast_node) = self.ast_node.as_ref() {
+                for member in ast_node.members.iter() {
+                    let member_name = format!("{}.{}", self.name, member.name);
+                    let member_type_kind = match member.type_kind.as_str() {
+                        "t_mapping" => TypeKind::Mapping,
+                        "t_array" => TypeKind::Array,
+                        "t_struct" => TypeKind::NaiveStruct,
+                        _ => TypeKind::Primitive,
+                    };
+                    let member_value_type = member.value_type.clone();
+                    let member_relative_slot = member.relative_slot.clone();
+
+                    let member = Member::new(
+                        member_name,
+                        member_type_kind,
+                        member_value_type,
+                        member_relative_slot,
+                        self.clone_box(),
+                        if member_type_kind.is_iterish() {
+                            Some(IteratorMeta::new(
+                                None, // key_type
+                                None, // perf_config
+                                Vec::new(), // items
+                                0, // from
+                                0, // to
+                            ))
+                        } else {
+                            None
+                        },
+                    );
+                    member.increment_step();
+                    member.absolute_slot = member.calculate_abs_slot();
+                    children.push(Box::new(member));
+                }
             }
             Some(children)
         } else {
@@ -433,38 +607,46 @@ impl Executable for Member {
 }
 
 impl Executable for IteratorItem {
-    // Note: iter can have iter as a child
-    fn execute(&self, _registry: &mut Registry, _perf_expression_evaluator: &mut PerfExpressionEvaluator) -> Option<PerfConfigItem> {
-        match self.type_kind {
-            TypeKind::Primitive => {
-                // Handle primitive types
-                if let Some(value) = &self.value {
-                    Some(PerfConfigItem {
-                        edfs: value.to_string(),
-                        from: None,
-                        to: None,
-                    })
-                } else {
-                    None
-                }
-            },
-            TypeKind::Array => {
-                // Handle arrays
-                if let Some(iter) = &self.iter {
-                    Some(PerfConfigItem {
-                        edfs: format!("{}.{}", self.name, iter.from..iter.to),
-                        from: Some(iter.from.to_string()),
-                        to: Some(iter.to.to_string()),
-                    })
-                } else {
-                    None
-                }
-            },
-            TypeKind::Mapping | TypeKind::NaiveStruct => {
-                // Handle mappings and naive structs
-                None
-            }
-        }
+    fn get_edfs(&self) -> String {
+        // Implement the logic to get the EDFS for a Member
+        // ...
+    }
+
+    fn get_type_and_name(&self) -> String {
+        // Implement the logic to get the type and name for a Member
+        // ...
+    }
+
+    fn get_type_kind(&self) -> TypeKind {
+        self.type_kind.clone()
+    }
+
+    fn get_iter(&self) -> Option<&IteratorMeta> {
+        self.iter.as_ref()
+    }
+
+    fn get_iter_mut(&mut self) -> Option<&mut IteratorMeta> {
+        self.iter.as_mut()
+    }
+
+    fn get_abs_slot(&self) -> Option<String> {
+        self.absolute_slot.clone()
+    }
+
+    fn get_value(&self) -> Option<String> {
+        self.value.clone()
+    }
+
+    fn increment_step(&mut self) {
+        self.step += 1;
+    }
+
+    fn get_belongs_to(&self) -> Option<&Executable> {
+        self.belongs_to.as_ref()
+    }
+
+    fn enqueue_execution(&self) {
+        self.registry.queue_per_step.insert(self.step, self.clone_box());
     }
 
     fn get_children(&self) -> Option<Vec<Box<dyn Executable>>> {
@@ -481,7 +663,7 @@ impl Executable for IteratorItem {
                     iter.items[i].mapping_key.clone(),
                 );
                 item.increment_step();
-                item.calculate_abs_slot();
+                item.absolute_slot = item.calculate_abs_slot();
                 children.push(Box::new(item));
             }
             Some(children)

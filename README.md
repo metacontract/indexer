@@ -47,7 +47,9 @@ classDiagram
         +offset: usize
         +relative_slot: String
         +absolute_slot: Option<String>
+        +iter: Option<IteratorMeta>
         +executor: Executor
+        +is_iterish: bool
         +calculat_abs_slot(): String
         +get_edfs():String
         +get_type_and_name() -> String
@@ -58,13 +60,13 @@ classDiagram
 
     class IteratorItem {
         +mapping_key: String
-        +new(name: String, type_kind: TypeKind, value_type: String, struct_index: usize, relative_slot: String, belongs_to: Executable, mapping_key: String) -> Self
+        +new(name: String, type_kind: TypeKind, value_type: String, relative_slot: String, belongs_to: Executable, mapping_key: String, iter: Option<IteratorMeta>) -> Self
     }
     class Member {
-        +iter: Option<IteratorMeta>
+        +new(name: String, type_kind: TypeKind, value_type: String, relative_slot: String, belongs_to: Executable, iter: Option<IteratorMeta>) -> Self
     }
     class IteratorMeta {
-        +keyType: String
+        +key_type: String
         +from: Option<usize>
         +to: Option<usize>
         +set_from(parsed_from:usize)
@@ -73,7 +75,6 @@ classDiagram
     class Executor {
         +queue_per_step: Vec<Vec<Executable>>
         +executed_per_step: Vec<Vec<Executable>>
-        +perf_expression_evaluator: PerfExpressionEvaluator
         +bulk_exec_and_enqueue_and_set_primitive_to_output(step:usize)
         +flush_queue(step:usize)
         +flush_executed(step:usize)
@@ -82,11 +83,26 @@ classDiagram
     class Registry {
         +perf_config_items: HashMap<String, PerfConfigItem>
         +output_flatten: HashMap<String, Executable>
+        +ast_node: ASTNode
         +set_output(edfs:String, e: Executable)
         +get_output(edfs: &str) -> Option<&Executable>
         +get_output_flatten() -> &Vec<Executable>
-        +new(perf_config_items: HashMap<String, PerfConfigItem>) -> Self
+        +new(perf_config_items: HashMap<String, PerfConfigItem>, storage_layout: Value) -> Self
         +get_perf_config_item(edfs:String): PerfConfigItem
+        +get_node(&self, edfs: &str) -> Option<&Node>
+    }
+    class ASTNode {
+        +nodes: HashMap<String, Node>
+        +from_storage_layout(storage_layout: Value) -> Self
+        +parse_members(types: &Value, node_type: &str) -> Vec<Node>
+        +get_node(&self, edfs: &str) -> Option<&Node>
+    }
+    class Node {
+        label: String,
+        members: Vec<Node>,
+        offset: usize,
+        slot: String,
+        node_type: String,
     }
     class PerfConfigItem {
         +edfs: String,
@@ -96,7 +112,7 @@ classDiagram
         +to_executed: Option<usize>
     }
     class PerfExpressionEvaluator {
-        +eval(expression:String) -> usize
+        static eval(expression:String) -> usize
     }
 
     Main --> Extractor
@@ -113,6 +129,8 @@ classDiagram
     Executor --> IteratorItem
     Member <|-- Executable
     IteratorItem <|-- Executable
+    Registry --> ASTNode
+    ASTNode --> Node
 
 
 ```
@@ -145,7 +163,7 @@ sequenceDiagram
     Compiler-->>Extractor: storage_layout
     deactivate Compiler
     Extractor->>Extractor: create Member objects from base_slots and storage_layout
-    Extractor->>Registry: new(perf_config_items)
+    Extractor->>Registry: new(perf_config_items, storage_layout)
     activate Registry
     Registry-->>Extractor: registry
     deactivate Registry
