@@ -6,7 +6,7 @@
 - Scale until "Your RAM Size > Your Dapp Indexer Size" with in-memory SQLite setting.
 
 # Diagrams
-```:mermaid
+```mermaid
 classDiagram
     class Compiler {
         +solc_path: String
@@ -117,7 +117,7 @@ classDiagram
 
 ```
 
-```:mermaid
+```mermaid
 sequenceDiagram
     participant Main
     participant Extractor
