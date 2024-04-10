@@ -259,25 +259,6 @@ sequenceDiagram
 
             end
 
-
-                Executor->>Registry: check_primitive_output(edfs_from_perf_config_item: String)
-                activate Registry
-                Registry-->>Executor: perf_conf_specified_executable: Option<Executable>
-                deactivate Registry
-
-                critical perf_conf_specified_executable
-                    option Some(perf_conf_specified_executable)
-                        Executor-->>Executable: set_value
-                        activate Executable
-                        Executable-->>Executor: 
-                        deactivate Executable
-
-                        Executor->>Executable: increment_step()
-                        Executable->>Executable: enqueue_execution()
-                        Executable->>Executor: 
-                end
-
-
             Executor-->>Extractor: 
             deactivate Executor
         end

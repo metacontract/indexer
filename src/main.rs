@@ -219,7 +219,7 @@ impl Executor {
     fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize, registry: &mut Registry, perf_expression_evaluator: &mut PerfExpressionEvaluator) {
         // Calculate absolute slot for each queued executable
         for executable in &mut self.queue_per_step[step] {
-            executable.calculat_abs_slot();
+            executable.calculate_abs_slot();
         }
 
         // Get values by slots from EthCall
@@ -241,7 +241,6 @@ impl Executor {
                 registry.set_output(executable.get_edfs(), executable.clone());
             } else {
                 // If the executable is a non-primitive (NaiveStruct, Array, Mapping)
-                let children = executable.get_children();
 
                 // Check if the executable has an iterator
                 if let Some(iter) = &mut executable.get_iter_mut() {
@@ -271,7 +270,13 @@ impl Executor {
                         if iter.to == 0 {
                             executable.increment_step();
                             executable.enqueue_execution();
+                        } else {
+                            let children = executable.get_children();
+                            for child in children {
+                                child.enqueue_execution();
+                            }
                         }
+
                     }
                 } else {
                     // If the executable doesn't have an iterator
@@ -281,16 +286,6 @@ impl Executor {
                     }
                 }
             }
-
-            // Check if the executable is a primitive output specified by the performance configuration item
-            if let Some(perf_conf_specified_executable) = registry.check_primitive_output(executable.get_edfs()) {
-                // Set the value for the primitive output executable
-                perf_conf_specified_executable.set_value(executable.get_value());
-
-                // Increment the step and enqueue the primitive output executable
-                perf_conf_specified_executable.increment_step();
-                perf_conf_specified_executable.enqueue_execution();
-            }
         }
 
         // Flush the executed executables for the current step
@@ -298,13 +293,11 @@ impl Executor {
     }
 
     fn flush_queue(&mut self, step: usize) {
-        // Flush the queue for the given step
-        // ...
+        self.queue_per_step[step].clear();
     }
 
     fn flush_executed(&mut self, step: usize) {
-        // Flush the executed executables for the given step
-        // ...
+        self.executed_per_step[step].clear();
     }
 }
 
@@ -335,12 +328,6 @@ impl Registry {
 
     fn get_perf_config_item(&self, edfs: String) -> Option<&PerfConfigItem> {
         self.perf_config_items.get(&edfs)
-    }
-
-    fn check_primitive_output(&self, edfs: String) -> Option<&Executable> {
-        // Check if the EDFS corresponds to a primitive output specified by the performance configuration item
-        // ...
-        None
     }
 }
 
@@ -378,32 +365,173 @@ trait Executable {
 }
 
 impl Executable for Member {
+    fn increment_step(&mut self) {
+        self.step += 1;
+    }
+    fn enqueue_execution(&self) {
+        self.registry.queue_per_step.insert(self.step, self.clone_box());
+    }
+    fn calculate_abs_slot(&mut self) -> String {
+        if let Some(belongs_to) = &self.belongs_to {
+            if let Some(abs_slot) = belongs_to.get_abs_slot() {
+                let abs_slot_num = abs_slot.parse::<usize>().unwrap();
+                let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
+                let combined_slot = abs_slot_num + relative_slot_num;
+                self.absolute_slot = Some(format!("{:X}", combined_slot));
+            } else {
+                self.absolute_slot.as_ref().unwrap().to_string()
+            }
+        } else {
+            self.absolute_slot.as_ref().unwrap().to_string()
+        }
+        self.absolute_slot.as_ref().unwrap().to_string()
+    }
+    fn get_children(&self) -> Option<Vec<Box<dyn Executable>>> {
+        if let Some(iter) = &self.iter {
+            let mut children = Vec::new();
+            for i in iter.from..iter.to {
+                let item = IteratorItem::new(
+                    format!("{}.{}", self.name, i),
+                    iter.items[i].type_kind.clone(),
+                    iter.items[i].value_type.clone(),
+                    iter.items[i].struct_index,
+                    iter.items[i].relative_slot.clone(),
+                    self.clone_box(),
+                    iter.items[i].mapping_key.clone(),
+                );
+                item.increment_step();
+                item.calculate_abs_slot();
+                children.push(Box::new(item));
+            }
+            Some(children)
+        } else {
+            None
+        }
+    }
     fn set_value(&mut self, value: Option<&PerfConfigItem>) {
         match self.type_kind {
             TypeKind::Primitive => {
-                self.value = value;
-            }
+                if let Some(value) = value {
+                    self.value = Some(value.to_string().as_str().to_string());
+                } else {
+                    self.value = None;
+                }
+            },
             TypeKind::Array => {
                 // Set the value for an array
                 if let Some(value) = value {
                     if let Some(iter) = &mut self.iter {
-                        iter.to = value.parse().unwrap_or(0);
+                        iter.to = value.to.as_ref().map(|s| s.parse().unwrap_or(0)).unwrap_or(0);
                     }
                 }
+            },
+            TypeKind::Mapping | TypeKind::NaiveStruct => {
+                // Skip setting the value for mappings and naive structs
             }
+        }
+    }
+}
+
+impl Executable for IteratorItem {
+    // Note: iter can have iter as a child
+    fn execute(&self, _registry: &mut Registry, _perf_expression_evaluator: &mut PerfExpressionEvaluator) -> Option<PerfConfigItem> {
+        match self.type_kind {
+            TypeKind::Primitive => {
+                // Handle primitive types
+                if let Some(value) = &self.value {
+                    Some(PerfConfigItem {
+                        edfs: value.to_string(),
+                        from: None,
+                        to: None,
+                    })
+                } else {
+                    None
+                }
+            },
+            TypeKind::Array => {
+                // Handle arrays
+                if let Some(iter) = &self.iter {
+                    Some(PerfConfigItem {
+                        edfs: format!("{}.{}", self.name, iter.from..iter.to),
+                        from: Some(iter.from.to_string()),
+                        to: Some(iter.to.to_string()),
+                    })
+                } else {
+                    None
+                }
+            },
+            TypeKind::Mapping | TypeKind::NaiveStruct => {
+                // Handle mappings and naive structs
+                None
+            }
+        }
+    }
+
+    fn get_children(&self) -> Option<Vec<Box<dyn Executable>>> {
+        if let Some(iter) = &self.iter {
+            let mut children = Vec::new();
+            for i in iter.from..iter.to {
+                let item = IteratorItem::new(
+                    format!("{}.{}", self.name, i),
+                    iter.items[i].type_kind.clone(),
+                    iter.items[i].value_type.clone(),
+                    iter.items[i].struct_index,
+                    iter.items[i].relative_slot.clone(),
+                    self.belongs_to.clone().unwrap(),
+                    iter.items[i].mapping_key.clone(),
+                );
+                item.increment_step();
+                item.calculate_abs_slot();
+                children.push(Box::new(item));
+            }
+            Some(children)
+        } else {
+            None
+        }
+    }
+
+    fn set_value(&mut self, value: Option<&PerfConfigItem>) {
+        match self.type_kind {
+            TypeKind::Primitive => {
+                if let Some(value) = value {
+                    self.value = Some(value.edfs.clone());
+                } else {
+                    self.value = None;
+                }
+            },
+            TypeKind::Array => {
+                if let Some(value) = value {
+                    if let Some(iter) = &mut self.iter {
+                        iter.to = value.to.as_ref().map(|s| s.parse().unwrap_or(0)).unwrap_or(0);
+                    }
+                }
+            },
             TypeKind::Mapping | TypeKind::NaiveStruct => {
                 // Skip setting the value for mappings and naive structs
             }
         }
     }
 
-    // Implement other methods for Member as an Executable
-    // ...
-}
+    fn increment_step(&mut self) {
+        self.step += 1;
+    }
 
-impl Executable for IteratorItem {
-    // Implement methods for IteratorItem as an Executable
-    // ...
+    fn calculate_abs_slot(&mut self) -> String {
+        // iter must have belongs_to and so logic can be shorter
+        if let Some(belongs_to) = &self.belongs_to {
+            if let Some(abs_slot) = belongs_to.get_abs_slot() {
+                let abs_slot_num = abs_slot.parse::<usize>().unwrap();
+                let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
+                let combined_slot = abs_slot_num + relative_slot_num;
+                self.absolute_slot = Some(format!("{:X}", combined_slot));
+            } else {
+                self.absolute_slot.as_ref().unwrap().to_string()
+            }
+        } else {
+            self.absolute_slot.as_ref().unwrap().to_string()
+        }
+        self.absolute_slot.as_ref().unwrap().to_string()
+    }
 }
 
 fn main() {
