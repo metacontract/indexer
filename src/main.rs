@@ -1,10 +1,10 @@
+mod ethcall;
+
 use std::collections::HashMap;
-use std::fs::File;
-use web3::futures::StreamExt;
-use web3::types::{Address, FilterBuilder};
 use std::process::Command;
 use serde_json::Value;
-use ethabi::{encode, Token};
+use ethcall::{EthCall};
+
 
 enum TypeKind {
     Mapping,
@@ -75,10 +75,11 @@ impl Compiler {
     }
 }
 
+
 struct Extractor {
     compiler: Compiler,
     registry: Registry,
-    initial_members: Vec<Executable>,
+    initial_members: Vec<Box<dyn Executable>>,
     executor: Executor,
     perf_expression_evaluator: PerfExpressionEvaluator,
 }
@@ -113,16 +114,16 @@ impl Extractor {
             let value_type = slot_info["valueType"].as_str().unwrap().to_string();
             let relative_slot = slot_info["slot"].as_str().unwrap().to_string();
 
-            let member = Member::new(
+            let member = Box::new(Member::new(
                 name.to_string(),
                 type_kind,
                 value_type,
                 relative_slot,
                 self.clone(),
                 None, // Initialize iter as None, it will be populated later if needed
-            );
+            ));
 
-            self.initial_members.push(Box::new(member));
+            self.initial_members.push(member);
         }
     }
 
@@ -158,8 +159,11 @@ struct Member {
     offset: usize,
     relative_slot: String,
     absolute_slot: Option<String>,
-    belongs_to: Option<Executable>,
+    belongs_to: Option<Box<dyn Executable>>,
     iter: Option<IteratorMeta>,
+    step: usize,
+    value: Option<String>,
+    ast_node: Option<&'static Node>,
 }
 
 impl Member {
@@ -168,18 +172,21 @@ impl Member {
         type_kind: TypeKind,
         value_type: String,
         relative_slot: String,
-        belongs_to: Executable,
+        belongs_to: Extractor,
         iter: Option<IteratorMeta>,
-    ) -> Self {
-        Self {
+    ) -> Box<Self> {
+        Box::new(Self {
             name,
             type_kind,
             value_type,
             relative_slot,
-            belongs_to: Some(belongs_to),
+            belongs_to: Some(Box::new(belongs_to)),
             absolute_slot: None,
             iter,
-        }
+            step: 0,
+            value: None,
+            ast_node: None,
+        })
     }
 }
 
@@ -192,6 +199,23 @@ struct IteratorMeta {
 }
 
 impl IteratorMeta {
+    fn new(
+        key_type: Option<String>,
+        perf_config: Option<PerfConfigItem>,
+        items: Vec<IteratorItem>,
+        from: usize,
+        to: usize,
+    ) -> Self {
+        IteratorMeta {
+            key_type,
+            perf_config,
+            items,
+            from,
+            to,
+        }
+    }
+
+
     fn set_from(&mut self, from: usize) {
         self.from = from;
     }
@@ -206,10 +230,12 @@ struct IteratorItem {
     type_kind: TypeKind,
     value_type: String,
     relative_slot: String,
-    belongs_to: Option<Executable>,
+    belongs_to: Option<Box<dyn Executable>>,
     absolute_slot: Option<String>,
     iter: Option<IteratorMeta>,
     mapping_key: Option<String>,
+    step: usize,
+    value: Option<String>,
 }
 
 impl IteratorItem {
@@ -218,11 +244,11 @@ impl IteratorItem {
         type_kind: TypeKind,
         value_type: String,
         relative_slot: String,
-        belongs_to: Executable,
+        belongs_to: Box<dyn Executable>,
         mapping_key: Option<String>,
         iter: Option<IteratorMeta>,
-    ) -> Self {
-        Self {
+    ) -> Box<Self> {
+        Box::new(Self {
             name,
             type_kind,
             value_type,
@@ -231,14 +257,16 @@ impl IteratorItem {
             mapping_key,
             absolute_slot: None,
             iter,
-        }
+            step: 0,
+            value: None,
+        })
     }
 }
 
 
 struct Executor {
-    queue_per_step: Vec<Vec<Executable>>,
-    executed_per_step: Vec<Vec<Executable>>,
+    queue_per_step: Vec<Vec<Box<dyn Executable>>>,
+    executed_per_step: Vec<Vec<Box<dyn Executable>>>,
     registry: Registry,
 }
 
@@ -251,10 +279,11 @@ impl Executor {
         }
     }
 
-    fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize) {
+    fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize, registry: &mut Registry, perf_expression_evaluator: &mut PerfExpressionEvaluator) {
 
         // Get values by slots from EthCall
-        let values = EthCall::get_values_by_slots(&self.queue_per_step[step]);
+        let slots: HashMap<String, String> = self.queue_per_step[step].iter().map(|executable| (executable.get_edfs(), executable.get_abs_slot().unwrap_or_default())).collect();
+        let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789012345678901234567890");
 
         // Flush the queue for the current step
         self.flush_queue(step);
@@ -262,14 +291,14 @@ impl Executor {
         // Process each executed executable
         for executable in &mut self.executed_per_step[step] {
             // Get the performance configuration item for the executable
-            let perf_config_item = self.registry.get_perf_config_item(executable.get_edfs());
+            let perf_config_item = registry.get_perf_config_item(executable.get_edfs());
 
             // Set the value for the executable based on the performance configuration item
-            executable.set_value(perf_config_item);
+            executable.set_value(values[executable.get_edfs()]);
 
             if executable.get_type_kind() == TypeKind::Primitive {
                 // If the executable is a primitive, push it to the output
-                self.registry.set_output(executable.get_edfs(), executable.clone());
+                registry.set_output(executable.get_edfs(), executable.clone());
             } else {
                 // If the executable is a non-primitive (NaiveStruct, Array, Mapping)
 
@@ -279,8 +308,8 @@ impl Executor {
                         // If the iterator has a non-empty `to` field
                         for i in 0..iter.to {
                             // Create new executables for each item in the iterator
-                            let new_executable = Executable::new();
-                            new_executable.enqueue_execution();
+                            let new_executable = executable.clone_box();
+                            new_executable.enqueue_execution(registry);
                         }
                     } else {
                         // If the iterator's `to` field is empty (likely a mapping)
@@ -288,23 +317,23 @@ impl Executor {
                         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
 
                         if let Some(from_expr) = from_expression {
-                            let parsed_from = PerfExpressionEvaluator::eval(from_expr);
+                            let parsed_from = perf_expression_evaluator.eval(from_expr);
                             iter.set_from(parsed_from);
                         }
 
                         if let Some(to_expr) = to_expression {
-                            let parsed_to = PerfExpressionEvaluator::eval(to_expr);
+                            let parsed_to = perf_expression_evaluator.eval(to_expr);
                             iter.set_to(parsed_to);
                         }
 
                         // Skipping algorithm for a mapping's unloaded bin_index
                         if iter.to == 0 {
                             executable.increment_step();
-                            executable.enqueue_execution();
+                            executable.enqueue_execution(registry);
                         } else {
                             let children = executable.get_children();
                             for child in children {
-                                child.enqueue_execution();
+                                child.enqueue_execution(registry);
                             }
                         }
 
@@ -313,7 +342,7 @@ impl Executor {
                     // If the executable doesn't have an iterator
                     if executable.get_abs_slot().is_some() && executable.get_value().is_none() {
                         // If the executable has an absolute slot but no value, enqueue it for execution
-                        executable.enqueue_execution();
+                        executable.enqueue_execution(registry);
                     }
                 }
             }
@@ -334,7 +363,7 @@ impl Executor {
 
 struct Registry {
     perf_config_items: HashMap<String, PerfConfigItem>,
-    output_flatten: HashMap<String, Executable>,
+    output_flatten: HashMap<String, Box<dyn Executable>>,
     ast_node: ASTNode,
 }
 
@@ -348,15 +377,15 @@ impl Registry {
         }
     }
 
-    fn set_output(&mut self, edfs: String, e: Executable) {
+    fn set_output(&mut self, edfs: String, e: Box<dyn Executable>) {
         self.output_flatten.insert(edfs, e);
     }
 
-    fn get_output(&self, edfs: &str) -> Option<&Executable> {
+    fn get_output(&self, edfs: &str) -> Option<&Box<dyn Executable>> {
         self.output_flatten.get(edfs)
     }
 
-    fn get_output_flatten(&self) -> &HashMap<String, Executable> {
+    fn get_output_flatten(&self) -> &HashMap<String, Box<dyn Executable>> {
         &self.output_flatten
     }
 
@@ -439,12 +468,12 @@ impl PerfExpressionEvaluator {
 }
 
 trait Executable {
-    fn is_iterish(&self) -> bool
-    fn calculate_abs_slot(&mut self) -> String;
+    fn is_iterish(&self) -> bool;
+    fn calculate_abs_slot(&mut self) -> ();
     fn get_edfs(&self) -> String;
     fn get_type_and_name(&self) -> String;
     fn get_type_kind(&self) -> TypeKind;
-    fn enqueue_execution(&self);
+    fn enqueue_execution(&self, registry: &mut Registry);
     fn increment_step(&mut self);
     fn get_children(&self) -> Option<Vec<Box<dyn Executable>>>;
     fn get_iter(&self) -> Option<&IteratorMeta>;
@@ -452,18 +481,16 @@ trait Executable {
     fn get_abs_slot(&self) -> Option<String>;
     fn get_value(&self) -> Option<String>;
     fn set_value(&mut self, value: Option<&PerfConfigItem>);
-    fn get_belongs_to(&self) -> Option<&Executable>;
+    fn get_belongs_to(&self) -> Option<&dyn Executable>;
 }
 
 impl Executable for Member {
     fn is_iterish(&self) -> bool {
-        self.type_kind.is_iterish
+        self.type_kind.is_iterish();
     }
 
 
     fn get_edfs(&self) -> String {
-        // Implement the logic to get the EDFS for a Member
-        // ...
     }
 
     fn get_type_and_name(&self) -> String {
@@ -495,14 +522,15 @@ impl Executable for Member {
         self.step += 1;
     }
 
-    fn get_belongs_to(&self) -> Option<&Executable> {
+    fn get_belongs_to(&self) -> Option<&dyn Executable> {
         self.belongs_to.as_ref()
     }
 
     fn enqueue_execution(&self) {
         self.registry.queue_per_step.insert(self.step, self.clone_box());
     }
-    fn calculate_abs_slot(&mut self) -> String {
+    fn calculate_abs_slot(&mut self) -> () {
+        // iter must have belongs_to and so logic can be shorter
         if let Some(belongs_to) = &self.belongs_to {
             if let Some(abs_slot) = belongs_to.get_abs_slot() {
                 let abs_slot_num = abs_slot.parse::<usize>().unwrap();
@@ -510,34 +538,59 @@ impl Executable for Member {
                 let combined_slot = abs_slot_num + relative_slot_num;
                 self.absolute_slot = Some(format!("{:X}", combined_slot));
             } else {
-                self.absolute_slot.as_ref().unwrap().to_string()
+                // Do nothing, as the error message suggests the function should return `()`
             }
         } else {
-            self.absolute_slot.as_ref().unwrap().to_string()
+            // Do nothing, as the error message suggests the function should return `()`
         }
-        self.absolute_slot.as_ref().unwrap().to_string()
     }
     fn get_children(&self) -> Option<Vec<Box<dyn Executable>>> {
         if self.is_iterish() && self.iter.as_ref().map(|i| i.to).is_some() {
             let mut children = Vec::new();
             if let Some(iter) = &self.iter {
                 for i in iter.from..iter.to.unwrap() {
-                    let item = IteratorItem::new(
-                        format!("{}.{}", self.name, i),
-                        iter.items[i].type_kind.clone(),
-                        iter.items[i].value_type.clone(),
-                        iter.items[i].relative_slot.clone(),
-                        self.clone_box(),
-                        iter.items[i].mapping_key.clone(),
-                        if iter.items[i].is_iterish() {
-                            Some(iter.clone())
-                        } else {
-                            None
-                        },
-                    );
-                    item.increment_step();
-                    item.absolute_slot = item.calculate_abs_slot();
-                    children.push(Box::new(item));
+                    // Find the corresponding struct and its members in the registry.ast_node
+                    let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
+                    if let Some(ast_node) = ast_node {
+                        for member in ast_node.members.iter() {
+                            let member_name = format!("{}.{}", self.name, member.name);
+                            let member_type_kind = match member.type_kind.as_str() {
+                                "t_mapping" => TypeKind::Mapping,
+                                "t_array" => TypeKind::Array,
+                                "t_struct" => TypeKind::NaiveStruct,
+                                _ => TypeKind::Primitive,
+                            };
+                            let member_value_type = member.value_type.clone();
+                            let member_relative_slot = member.relative_slot.clone();
+
+                            let item = IteratorItem::new(
+                                member_name,
+                                member_type_kind,
+                                member_value_type,
+                                member_relative_slot,
+                                self.clone_box(),
+                                if member_type_kind.is_iterish() {
+                                    Some(IteratorMeta::new(
+                                        None, // key_type
+                                        None, // perf_config
+                                        Vec::new(), // items
+                                        0, // from
+                                        0, // to
+                                    ))
+                                } else {
+                                    None
+                                },
+                            );
+                            item.increment_step();
+                            item.calculate_abs_slot();
+                            self.children.push(item);
+                        }
+                    }
+
+                    self.increment_step();
+                    self.calculate_abs_slot();
+                    self.calculate_abs_slot();
+                    children.push(Box::new(self));
                 }
             }
             Some(children)
@@ -571,9 +624,10 @@ impl Executable for Member {
                         } else {
                             None
                         },
+
                     );
                     member.increment_step();
-                    member.absolute_slot = member.calculate_abs_slot();
+                    member.calculate_abs_slot();
                     children.push(Box::new(member));
                 }
             }
@@ -641,7 +695,7 @@ impl Executable for IteratorItem {
         self.step += 1;
     }
 
-    fn get_belongs_to(&self) -> Option<&Executable> {
+    fn get_belongs_to(&self) -> Option<&dyn Executable> {
         self.belongs_to.as_ref()
     }
 
@@ -653,18 +707,34 @@ impl Executable for IteratorItem {
         if let Some(iter) = &self.iter {
             let mut children = Vec::new();
             for i in iter.from..iter.to {
-                let item = IteratorItem::new(
-                    format!("{}.{}", self.name, i),
-                    iter.items[i].type_kind.clone(),
-                    iter.items[i].value_type.clone(),
-                    iter.items[i].struct_index,
-                    iter.items[i].relative_slot.clone(),
-                    self.belongs_to.clone().unwrap(),
-                    iter.items[i].mapping_key.clone(),
-                );
-                item.increment_step();
-                item.absolute_slot = item.calculate_abs_slot();
-                children.push(Box::new(item));
+                if let Some(ast_node) = &self.ast_node {
+                    let item: Box<dyn Executable> = Box::new(IteratorItem::new(
+                        format!("{}.{}", self.name, i),
+                        iter.items[i].type_kind.clone(),
+                        iter.items[i].value_type.clone(),
+                        iter.items[i].relative_slot.clone(),
+                        self.belongs_to.clone().unwrap(),
+                        iter.items[i].mapping_key.clone(),
+                        Some(ast_node.get_children(i).unwrap_or_default()),
+                    ));
+                    item.increment_step();
+                    item.calculate_abs_slot();
+                    children.push(item);
+                } else {
+                    // Handle the case where self.ast_node is None
+                    let item: Box<dyn Executable> = Box::new(IteratorItem::new(
+                        format!("{}.{}", self.name, i),
+                        iter.items[i].type_kind.clone(),
+                        iter.items[i].value_type.clone(),
+                        iter.items[i].relative_slot.clone(),
+                        self.belongs_to.clone().unwrap(),
+                        iter.items[i].mapping_key.clone(),
+                        None,
+                    ));
+                    item.increment_step();
+                    item.calculate_abs_slot();
+                    children.push(item);
+                }
             }
             Some(children)
         } else {
@@ -698,7 +768,7 @@ impl Executable for IteratorItem {
         self.step += 1;
     }
 
-    fn calculate_abs_slot(&mut self) -> String {
+    fn calculate_abs_slot(&mut self) -> () {
         // iter must have belongs_to and so logic can be shorter
         if let Some(belongs_to) = &self.belongs_to {
             if let Some(abs_slot) = belongs_to.get_abs_slot() {
@@ -707,12 +777,15 @@ impl Executable for IteratorItem {
                 let combined_slot = abs_slot_num + relative_slot_num;
                 self.absolute_slot = Some(format!("{:X}", combined_slot));
             } else {
-                self.absolute_slot.as_ref().unwrap().to_string()
+                // Do nothing, as the error message suggests the function should return `()`
             }
         } else {
-            self.absolute_slot.as_ref().unwrap().to_string()
+            // Do nothing, as the error message suggests the function should return `()`
         }
-        self.absolute_slot.as_ref().unwrap().to_string()
+    }
+
+    fn clone_box(&self) -> Box<dyn Executable> {
+        Box::new(self.clone())
     }
 }
 
