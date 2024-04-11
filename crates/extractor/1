@@ -1,0 +1,3444 @@
+warning: /Users/bob/code/indexer/crates/extractor/Cargo.toml: unused manifest key: workspace.package.name
+warning: /Users/bob/code/indexer/crates/extractor/Cargo.toml: unused manifest key: workspace.package.name
+   Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
+   Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
+error: expected one of `extern`, `fn`, or `unsafe`, found keyword `pub`
+  --> src/eth_call.rs:11:11
+   |
+10 | impl EthCall {
+   |              - while parsing this item list starting here
+11error: expected one of `extern`, `fn`, or `unsafe`, found keyword `pub`
+  --> src/eth_call.rs:11:11
+   |
+10 | impl EthCall {
+   |              - while parsing this item list starting here
+11 |     async pub fn get_values_by_slots(slots: &HashMap<String, String>, network: &str, contract_address: &str, contract_code: &str) -> Resu...
+   |     ------^^^
+   |     |     |
+   |     |     expected one of `extern`, `fn`, or `unsafe`
+   |     help: visibility `pub` must come before `async`: `pub async`
+...
+78 | }
+   | - the item list ends here
+ |     async pub fn get_values_by_slots(slots: &HashMap<String, String>, network: &str, contract_address: &str, contract_code: &str) -> Resu...
+   |     ------^^^
+   |     |     |
+   |     |     expected one of `extern`, `fn`, or `unsafe`
+   |     help: visibility `pub` must come before `async`: `pub async`
+...
+78 | }
+   | - the item list ends here
+
+
+error[E0583]: file not found for module `compiler`
+ --> src/iterator_meta.rs:1:1
+  |
+1 | mod compiler;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `compiler`, create file "src/iterator_meta/compiler.rs" or "src/iterator_meta/compiler/mod.rs"
+  = note: if there is a `mod compiler` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `extractor`
+ --> src/iterator_meta.rs:2:1
+  |
+2 | mod extractor;
+  | ^^^^^^^^^^^^^^
+  |
+  = help: to create the module `extractor`, create file "src/iterator_meta/extractor.rs" or "src/iterator_meta/extractor/mod.rs"
+  = note: if there is a `mod extractor` elsewhere in the crate already, import it with `use crate::...` insteaderror[E0583]: file not found for module `compiler`
+ --> src/iterator_meta.rs:1:1
+  |
+1 | mod compiler;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `compiler`, create file "src/iterator_meta/compiler.rs" or "src/iterator_meta/compiler/mod.rs"
+  = note: if there is a `mod compiler` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `extractor`
+ --> src/iterator_meta.rs:2:1
+  |
+2 | mod extractor;
+  | ^^^^^^^^^^^^^^
+  |
+  = help: to create the module `extractor`, create file "src/iterator_meta/extractor.rs" or "src/iterator_meta/extractor/mod.rs"
+  = note: if there is a `mod extractor` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `executable`
+ --> 
+
+error[E0583]: file not found for module `executable`
+ --> src/iterator_meta.rs:3:1
+  |
+3 | mod executable;
+  | ^^^^^^^^^^^^^^^
+  |
+  = help: to create the module `executable`, create file "src/iterator_meta/executable.rs" or "src/iterator_meta/executable/mod.rs"
+  = note: if there is a `mod executable` elsewhere in the crate already, import it with `use crate::...` instead
+
+src/iterator_meta.rs:3:1
+  |
+3 | mod executable;
+  | ^^^^^^^^^^^^^^^
+  |
+  = help: to create the module `executable`, create file "src/iterator_meta/executable.rs" or "src/iterator_meta/executable/mod.rs"
+  = note: if there is a `mod executable` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `registry`
+ --> src/iterator_meta.rs:4:1
+  |
+4 | mod registry;
+  | ^^^^^^^^^^^^^error[E0583]: file not found for module `registry`
+ --> src/iterator_meta.rs:4:1
+  |
+4 | mod registry;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `registry`, create file "src/iterator_meta/registry.rs" or "src/iterator_meta/registry/mod.rs"
+  = note: if there is a `mod registry` elsewhere in the crate already, import it with `use crate::...` instead
+
+
+  |
+  = help: to create the module `registry`, create file "src/iterator_meta/registry.rs" or "src/iterator_meta/registry/mod.rs"
+  = note: if there is a `mod registry` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `eth_call`
+ --> src/iterator_meta.rs:5:1
+  |
+5 | mod eth_call;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `eth_call`, create file "src/iterator_meta/eth_call.rs" or "src/iterator_meta/eth_call/mod.rs"error[E0583]: file not found for module `eth_call`
+ --> src/iterator_meta.rs:5:1
+  |
+5 | mod eth_call;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `eth_call`, create file "src/iterator_meta/eth_call.rs" or "src/iterator_meta/eth_call/mod.rs"
+  = note: if there is a `mod eth_call` elsewhere in the crate already, import it with `use crate::...` instead
+
+
+  = note: if there is a `mod eth_call` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `type_kind`
+ error[E0583]: file not found for module `type_kind`
+ --> src/iterator_meta.rs:6:1
+  |
+6 | mod type_kind;
+  | ^^^^^^^^^^^^^^
+  |--> src/iterator_meta.rs:6:1
+  |
+6 | mod type_kind;
+  | ^^^^^^^^^^^^^^
+  |
+  = help: to create the module `type_kind`, create file "src/iterator_meta/type_kind.rs" or "src/iterator_meta/type_kind/mod.rs"
+  = note: if there is a `mod type_kind` elsewhere in the crate already, import it with `use crate::...` instead
+  = help: to create the module `type_kind`, create file "src/iterator_meta/type_kind.rs" or "src/iterator_meta/type_kind/mod.rs"
+  = note: if there is a `mod type_kind` elsewhere in the crate already, import it with `use crate::...` instead
+
+
+
+error[E0583]: file not found for module `perf_config_item`
+ error[E0583]: file not found for module `perf_config_item`
+ --> src/iterator_meta.rs:7:1
+  |
+7 | mod perf_config_item;
+  | ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: to create the module `perf_config_item`, create file "src/iterator_meta/perf_config_item.rs" or "src/iterator_meta/perf_config_item/mod.rs"
+  = note--> src/iterator_meta.rs:7:1
+  |
+7 | mod perf_config_item;
+  | ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: to create the module `perf_config_item`, create file "src/iterator_meta/perf_config_item.rs" or "src/iterator_meta/perf_config_item/mod.rs"
+  = note: if there is a `mod perf_config_item` elsewhere in the crate already, import it with `use crate::...` instead
+
+: if there is a `mod perf_config_item` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `executor`
+ error[E0583]: file not found for module `executor`
+ --> src/iterator_meta.rs:8:1
+  |
+8 | mod executor;
+  | --> src/iterator_meta.rs:8:1
+  |
+8 | mod executor;
+  | ^^^^^^^^^^^^^
+  |
+  = help: to create the module `executor`, create file "src/iterator_meta/executor.rs" or "src/iterator_meta/executor/mod.rs"
+  = ^^^^^^^^^^^^^
+  |
+  = help: to create the module `executor`, create file "src/iterator_meta/executor.rs" or "src/iterator_meta/executor/mod.rs"
+  = note: if there is a `mod executor` elsewhere in the crate already, import it with `use crate::...` instead
+
+note: if there is a `mod executor` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `perf_expression_evaluator`
+ error[E0583]: file not found for module `perf_expression_evaluator`
+ --> src/iterator_meta.rs:9:1
+  |
+9 | mod perf_expression_evaluator;
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  --> src/iterator_meta.rs:9:1
+  |
+9 | mod perf_expression_evaluator;
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: to create the module `perf_expression_evaluator`, create file "src/iterator_meta/perf_expression_evaluator.rs" or "src/iterator_meta/perf_expression_evaluator/mod.rs"
+  = note: if there is a `mod perf_expression_evaluator` elsewhere in the crate already, import it with `use crate::...` instead
+
+|
+  = help: to create the module `perf_expression_evaluator`, create file "src/iterator_meta/perf_expression_evaluator.rs" or "src/iterator_meta/perf_expression_evaluator/mod.rs"
+  = note: if there is a `mod perf_expression_evaluator` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `ast_node`
+  error[E0583]: file not found for module `ast_node`
+  --> src/iterator_meta.rs:11:1
+   |
+11 | mod ast_node;
+   --> src/iterator_meta.rs:11:1
+   |
+11 | mod ast_node;
+   | ^^^^^^^^^^^^^
+   |
+   = help: to create the module `ast_node`, create file "src/iterator_meta/ast_node.rs" or "src/iterator_meta/ast_node/mod.rs"
+| ^^^^^^^^^^^^^
+   |
+   = help: to create the module `ast_node`, create file "src/iterator_meta/ast_node.rs" or "src/iterator_meta/ast_node/mod.rs"
+   = note: if there is a `mod ast_node` elsewhere in the crate already, import it with `use crate::...` instead
+
+   = note: if there is a `mod ast_node` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0428]: the name `extractor` is defined multiple times
+ --> src/main.rs:3:1
+  |
+2 | mod extractor;
+  | -------------- previous definition of the module `extractor` here
+3 error[E0428]: the name `extractor` is defined multiple times
+ --> src/main.rs:3:1
+  |
+2 | mod extractor;
+  | -------------- previous definition of the module `extractor` here
+3 | mod extractor;
+  | ^^^^^^^^^^^^^^ `extractor` redefined here
+  |
+  = note: `extractor` must be defined only once in the type namespace of this module
+| mod extractor;
+  | ^^^^^^^^^^^^^^ `extractor` redefined here
+  |
+  = note: `extractor` must be defined only once in the type namespace of this module
+
+error[E0428]: the name `compiler` is defined multiple times
+ --> 
+error[E0428]: the name `compiler` is defined multiple times
+ --> src/main.rs:4:1
+  |
+1 | mod compiler;
+src/main.rs:4:1
+  |
+1 | mod compiler;
+  | ------------- previous definition of the module `compiler` here
+...
+4 |  | ------------- previous definition of the module `compiler` here
+...
+4 | mod compiler;
+  | ^^^^^^^^^^^^^ `compiler` redefined here
+  |
+  = note mod compiler;
+  | ^^^^^^^^^^^^^ `compiler` redefined here
+  |
+  = note: `compiler` must be defined only once in the type namespace of this module
+
+: `compiler` must be defined only once in the type namespace of this module
+
+error[E0255]: the name `Extractor` is defined multiple times
+  --> src/extractor.rs:19:1
+   |
+2  | use super::extractor::Extractor;
+   |     --------------------------- previous import of the type `Extractor` here
+...
+19 | pub struct Extractor<'extractor_lifetime> {error[E0255]: the name `Extractor` is defined multiple times
+  --> src/extractor.rs:19:1
+   |
+2  | use super::extractor::Extractor;
+   |     --------------------------- previous import of the type `Extractor` here
+...
+19 | pub struct Extractor<'extractor_lifetime> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Extractor` redefined here
+   |
+   = note: `Extractor` must be defined only once in the type namespace of this module
+help: you can use `as` to change the binding name of the import
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Extractor` redefined here
+   |
+   = note: `Extractor` must be defined only once in the type namespace of this module
+help: you can use `as` to change the binding name of the import
+   |
+2  | use super::extractor::Extractor as OtherExtractor;
+
+   |
+2  | use super::extractor::Extractor as OtherExtractor;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0255]: the name `Executor` is defined multiple times
+  error[E0255]: the name `Executor` is defined multiple times
+  --> src/executor.rs:23:1
+   |
+3  | use super::executor::Executor;
+   |     ------------------------- --> src/executor.rs:23:1
+   |
+3  | use super::executor::Executor;
+   |     ------------------------- previous import of the type `Executor` here
+...
+23 | pub struct Executor {
+   | ^^^^^^^^^^^^^^^^^^^previous import of the type `Executor` here
+...
+23 | pub struct Executor {
+   | ^^^^^^^^^^^^^^^^^^^ `Executor` redefined here
+   |
+   = note: `Executor` must be defined only once in the type namespace of this module `Executor` redefined here
+   |
+   = note: `Executor` must be defined only once in the type namespace of this module
+help: you can use `as` to change the binding name of the import
+   |
+3  | use super::executor::Executor as OtherExecutor;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+help: you can use `as` to change the binding name of the import
+   |
+3  | use super::executor::Executor as OtherExecutor;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0252]: the name `HashMap` is defined multiple times
+  error[E0252]: the name `HashMap` is defined multiple times
+  --> src/executor.rs:19:5
+   |
+15 | use std::collections::HashMap;
+   |     ---------------------------> src/executor.rs:19:5
+   |
+15 | use std::collections::HashMap;
+   |     ------------------------- previous import of the type `HashMap` here
+...
+19 | use std::collections::HashMap;
+    previous import of the type `HashMap` here
+...
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ `HashMap` reimported here
+   |
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ `HashMap` reimported here
+   |
+   = note: `HashMap` must be defined only once in the type namespace of this module
+
+= note: `HashMap` must be defined only once in the type namespace of this module
+
+error[E0252]: the name `Command` is defined multiple times
+  error[E0252]: the name `Command` is defined multiple times
+  --> src/executor.rs:20:5
+   |
+16 | use std::process::Command;
+   |     -----------------------> src/executor.rs:20:5
+   |
+16 | use std::process::Command;
+   |     --------------------- previous import of the type `Command` here
+...
+20 | use std::process::Command; previous import of the type `Command` here
+...
+20 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^ `Command` reimported here
+   |
+   |     ^^^^^^^^^^^^^^^^^^^^^ `Command` reimported here
+   |
+   = note: `Command` must be defined only once in the type namespace of this module
+
+
+   = note: `Command` must be defined only once in the type namespace of this module
+
+error[E0252]: the name `Value` is defined multiple times
+  error[E0252]: the name `Value` is defined multiple times
+  --> src/executor.rs:21:5
+   |
+17 | use serde_json::Value;
+   |     ----------------- --> src/executor.rs:21:5
+   |
+17 | use serde_json::Value;
+   |     ----------------- previous import of the type `Value` here
+...
+21 | use serde_json::Value;
+previous import of the type `Value` here
+...
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^ `Value` reimported here
+   |
+   |     ^^^^^^^^^^^^^^^^^ `Value` reimported here
+   |
+   = note: `Value` must be defined only once in the type namespace of this module
+
+   = note: `Value` must be defined only once in the type namespace of this module
+
+error[E0255]: the name `Registry` is defined multiple times
+  error[E0255]: the name `Registry` is defined multiple times
+  --> src/registry.rs:18:1
+   |
+4  | use super::registry::Registry;
+   |     ------------------------- previous import of the type `Registry` here
+--> src/registry.rs:18:1
+   |
+4  | use super::registry::Registry;
+   |     ------------------------- previous import of the type `Registry` here
+...
+18 | pub struct Registry<'registry_lifetime> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ...
+18 | pub struct Registry<'registry_lifetime> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Registry` redefined here
+   |
+   = note: `Registry` must be defined only once in the type namespace of this module
+help`Registry` redefined here
+   |
+   = note: `Registry` must be defined only once in the type namespace of this module
+help: you can use `as` to change the binding name of the import
+   |
+4  | use super::registry::Registry as OtherRegistry: you can use `as` to change the binding name of the import
+   |
+4  | use super::registry::Registry as OtherRegistry;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0252]: the name `HashMap` is defined multiple times
+  error[E0252]: the name `HashMap` is defined multiple times
+  --> src/executable.rs:19:5
+   |
+15 | use std::collections::HashMap;
+   | --> src/executable.rs:19:5
+   |
+15 | use std::collections::HashMap;
+   |     ------------------------- previous import of the type `HashMap` here
+...
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ `HashMap` reimported here
+   |
+   = note: `HashMap` must be defined only once in the type namespace of this module
+
+    ------------------------- previous import of the type `HashMap` here
+...
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ `HashMap` reimported here
+   |
+   = note: `HashMap` must be defined only once in the type namespace of this module
+
+error[E0252]: the name `Command` is defined multiple times
+  error[E0252]: the name `Command` is defined multiple times
+  --> src/executable.rs:20:5
+   |
+16 | use std::process::Command;
+   |     -----------------------> src/executable.rs:20:5
+   |
+16 | use std::process::Command;
+   |     --------------------- previous import of the type `Command` here
+...
+20 | use std::process::Command;
+ previous import of the type `Command` here
+...
+20 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^ `Command` reimported here
+   |
+   = note   |     ^^^^^^^^^^^^^^^^^^^^^ `Command` reimported here
+   |
+   = note: `Command` must be defined only once in the type namespace of this module
+
+: `Command` must be defined only once in the type namespace of this module
+
+error[E0252]: the name `Value` is defined multiple times
+  error[E0252]: the name `Value` is defined multiple times
+  --> src/executable.rs:21:5
+   |
+17 | use serde_json::Value;
+   |     ----------------- --> src/executable.rs:21:5
+   |
+17 | use serde_json::Value;
+   |     ----------------- previous import of the type `Value` here
+...
+21 | use serde_json::Value;
+   previous import of the type `Value` here
+...
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^ `Value` reimported here
+   |     ^^^^^^^^^^^^^^^^^ `Value` reimported here
+   |
+   = note: `Value` must be defined only once in the type namespace of this module
+
+|
+   = note: `Value` must be defined only once in the type namespace of this module
+
+error[E0255]: the name `Executable` is defined multiple times
+  --> src/executable.rs:25:1
+   |
+5  | error[E0255]: the name `Executable` is defined multiple times
+  --> src/executable.rs:25:1
+   |
+5  | use super::executable::Executable;
+   |     ----------------------------- previous import of the type `Executable` here
+...
+25 | pub struct Executable<'executable_lifetime> {
+   | use super::executable::Executable;
+   |     ----------------------------- previous import of the type `Executable` here
+...
+25 | pub struct Executable<'executable_lifetime> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Executable` redefined here
+   |
+   = note: `Executable` must be defined only once in the type namespace of this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Executable` redefined here
+   |
+   = note: `Executable` must be defined only once in the type namespace of this module
+help: you can use `as` to change the binding name of the import
+   |
+5  | use super::executable::Executable as OtherExecutablehelp: you can use `as` to change the binding name of the import
+   |
+5  | use super::executable::Executable as OtherExecutable;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+;
+   |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0449]: visibility qualifiers are not permitted here
+  --> error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:43:5
+   |
+43 |     pub fn new(
+   |     ^^^
+src/executable.rs:43:5
+   |
+43 |     pub fn new(
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+   |
+   = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:72:5
+   |
+72 |     pub fn is_iterish(&self) -> bool {
+   |     ^^^
+--> src/executable.rs:72:5
+   |
+72 |     pub fn is_iterish(&self) -> bool {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+   |
+   = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:77:5
+   |
+77 |     pub fn get_edfs(&self) -> String {
+--> src/executable.rs:77:5
+   |
+77 |     pub fn get_edfs(&self) -> String {
+   |     ^^^
+   |
+   = note   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:80:5
+   |
+80 |     pub fn get_type_and_name(&self) -> String {
+   |     ^^^  --> src/executable.rs:80:5
+   |
+80 |     pub fn get_type_and_name(&self) -> String {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+   |
+   = note: trait items always share the visibility of their trait
+
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:85:5
+   |
+85 |     pub fn get_type_kind(&self) -> TypeKind {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait--> src/executable.rs:85:5
+   |
+85 |     pub fn get_type_kind(&self) -> TypeKind {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:89:5
+   |
+89 |     pub fn get_iter(&self) -> Option<&IteratorMeta> {--> src/executable.rs:89:5
+   |
+89 |     pub fn get_iter(&self) -> Option<&IteratorMeta> {
+   |     ^^^
+   |
+   = 
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:93:5
+   |
+93 |     pub fn get_iter_mut(&mut self) -> Option<&mut IteratorMeta> {
+   |     ^^^
+   |
+--> src/executable.rs:93:5
+   |
+93 |     pub fn get_iter_mut(&mut self) -> Option<&mut IteratorMeta> {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+   = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+  error[E0449]: visibility qualifiers are not permitted here
+  --> src/executable.rs:97:5
+   |
+97 |     pub fn get_abs_slot(&self) -> Option<String> {
+   |     ^^^
+   |
+--> src/executable.rs:97:5
+   |
+97 |     pub fn get_abs_slot(&self) -> Option<String> {
+   |     ^^^
+   |
+   = note: trait items always share the visibility of their trait
+
+   = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:101:5
+    |
+101 | --> src/executable.rs:101:5
+    |
+101 |     pub fn get_value(&self) -> Option<String> {
+    |     ^^^
+    |
+    pub fn get_value(&self) -> Option<String> {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+    = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:105:5
+    |
+105 |     pub fn increment_step(&mut self) {
+    |     ^^^--> src/executable.rs:105:5
+    |
+105 |     pub fn increment_step(&mut self) {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+
+    |
+    = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:109:5
+    |
+109 |     pub fn get_belongs_to(&self) -> Option<&Executable> {
+    |     ^^^--> src/executable.rs:109:5
+    |
+109 |     pub fn get_belongs_to(&self) -> Option<&Executable> {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+
+    |
+    = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:113:5
+    |
+113 |   --> src/executable.rs:113:5
+    |
+113 |     pub fn enqueue_execution(&self) {
+    |     ^^^
+    |
+     pub fn enqueue_execution(&self) {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+    = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:117:5
+    |
+117 |     pub fn get_children(&self) -> Option<Vec<&Executable>> {
+    |     ^^^
+    |
+    = note--> src/executable.rs:117:5
+    |
+117 |     pub fn get_children(&self) -> Option<Vec<&Executable>> {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:210:5
+    |
+210 |     pub fn set_value(&mut self, value: Option<&PerfConfigItem>) {
+    |     ^^^
+--> src/executable.rs:210:5
+    |
+210 |     pub fn set_value(&mut self, value: Option<&PerfConfigItem>) {
+    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+    |
+    = note: trait items always share the visibility of their trait
+
+error[E0449]: visibility qualifiers are not permitted here
+   error[E0449]: visibility qualifiers are not permitted here
+   --> src/executable.rs:233:5
+    |
+233 |     pub fn calculate_abs_slot(&mut self) -> () {
+--> src/executable.rs:233:5
+    |
+233 |     pub fn calculate_abs_slot(&mut self) -> () {
+    |     ^^^
+    |
+    = note    |     ^^^
+    |
+    = note: trait items always share the visibility of their trait
+
+: trait items always share the visibility of their trait
+
+error[E0106]: missing lifetime specifier
+  --> src/executor.rs:24:38
+   |
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+   |                                      ^^^^^^^^^^ expected named lifetime parameter
+error[E0106]: missing lifetime specifier
+  --> src/executor.rs:24:38
+   |
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+   |                                      ^^^^^^^^^^ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ pub struct Executor<'a> {
+24   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ pub struct Executor<'a> {
+24 ~     queue_per_step: Vec<Vec<&'static Executable<'a>>>,
+    ~     queue_per_step: Vec<Vec<&'static Executable<'a>>>,
+   |
+
+|
+
+error[E0106]: missing lifetime specifier
+  error[E0106]: missing lifetime specifier
+  --> src/executor.rs:25:41
+   |
+25 |     executed_per_step: Vec<Vec<&'static Executable>>,
+   |                                         ^^^^^^^^^^ expected named lifetime parameter--> src/executor.rs:25:41
+   |
+25 |     executed_per_step: Vec<Vec<&'static Executable>>,
+   |                                         ^^^^^^^^^^ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ 
+   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ pub struct Executor<'a> {
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+25pub struct Executor<'a> {
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+25 ~     executed_per_step: Vec<Vec<&'static Executable<'a>>>,
+   |
+
+ ~     executed_per_step: Vec<Vec<&'static Executable<'a>>>,
+   |
+
+error[E0106]: missing lifetime specifier
+  error[E0106]: missing lifetime specifier
+  --> src/executor.rs:26:15
+   |
+26 |     registry: Registry,
+   |               ^^^^^^^^--> src/executor.rs:26:15
+   |
+26 |     registry: Registry,
+   |               ^^^^^^^^ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ pub struct Executor<'a> {
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+25 |     executed_per_step: Vec<Vec<&'static Executable>>,
+ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+23 ~ pub struct Executor<'a> {
+24 |     queue_per_step: Vec<Vec<&'static Executable>>,
+25 |     executed_per_step: Vec<Vec<&'static Executable>>,
+26 ~     registry: Registry<'a>,
+   |
+
+26 ~     registry: Registry<'a>,
+   |
+
+error[E0726]: implicit elided lifetime not allowed here
+   --> src/executable.rs:251:22
+    |
+251 | impl ExecutableT for Executable {}
+    |                      ^^^^^^^^^^ expected lifetime parameter
+    error[E0726]: implicit elided lifetime not allowed here
+   --> src/executable.rs:251:22
+    |
+251 | impl ExecutableT for Executable {}
+    |                      ^^^^^^^^^^ expected lifetime parameter
+    |
+help: indicate the anonymous lifetime
+    |
+251 | impl ExecutableT for Executable<'_>|
+help: indicate the anonymous lifetime
+    |
+251 | impl ExecutableT for Executable<'_> {}
+    |                                ++++
+
+ {}
+    |                                ++++
+
+error[E0106]: missing lifetime specifier
+  error[E0106]: missing lifetime specifier
+  --> src/iterator_meta.rs:33:16
+   |
+33 |     items: Vec<Executable>,
+   |                ^^^^^^^^^^ --> src/iterator_meta.rs:33:16
+   |
+33 |     items: Vec<Executable>,
+   |                ^^^^^^^^^^ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+30 ~ expected named lifetime parameter
+   |
+help: consider introducing a named lifetime parameter
+   |
+30 ~ pub struct IteratorMeta<'a> {
+31 |     key_type: Option<String>,
+32 | pub struct IteratorMeta<'a> {
+31 |     key_type: Option<String>,
+32 |     perf_config: Option<PerfConfigItem>,
+33 ~     items: Vec<Executable<'a>>,
+       perf_config: Option<PerfConfigItem>,
+33 ~     items: Vec<Executable<'a>>,
+   |
+
+|
+
+warning: unused import: `std::collections::HashMap`
+  --> src/compiler.rs:14:5
+   warning: unused import: `std::collections::HashMap`
+  --> src/compiler.rs:14:5
+   |
+14 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^|
+14 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `super::extractor::Extractor`
+ --> warning: unused import: `super::extractor::Extractor`
+ --> src/extractor.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     src/extractor.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_config_item::PerfConfigItem`
+ --> src/extractor.rs:6:5
+  |
+6 | use super::perf_config_item::PerfConfigItem;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::eth_call::EthCall`
+ --> src/extractor.rs:8:5
+  |
+8 | use super::eth_call::EthCall;
+  warning: unused import: `super::perf_config_item::PerfConfigItem`
+ --> src/extractor.rs:6:5
+  |
+6 | use super::perf_config_item::PerfConfigItem;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::eth_call::EthCall`
+ --> src/extractor.rs:8:5
+  |
+8 | use super::eth_call::EthCall;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::iterator_meta::IteratorMeta`
+ --> src/extractor.rs:9:5warning: unused import: `super::iterator_meta::IteratorMeta`
+ --> src/extractor.rs:9:5
+  |
+9 | 
+  |
+9 | use super::iterator_meta::IteratorMeta;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+use super::iterator_meta::IteratorMeta;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/extractor.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+
+  --> src/extractor.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ast_node::ASTNode`
+  --> src/extractor.rs:11:5
+   |
+11 |warning: unused import: `super::ast_node::ASTNode`
+  --> src/extractor.rs:11:5
+   |
+11 | use super::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+ use super::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ast_node::Node`
+  warning: unused import: `super::ast_node::Node`
+  --> src/extractor.rs:12:5
+   |
+12 | use super::ast_node::Node;--> src/extractor.rs:12:5
+   |
+12 | use super::ast_node::Node;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  warning: unused import: `std::process::Command`
+  --> src/extractor.rs:16:5
+   |
+16 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^--> src/extractor.rs:16:5
+   |
+16 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `serde_json::Value`
+  warning: unused import: `serde_json::Value`
+  --> src/extractor.rs:17:5
+   |
+17 | use serde_json::Value;
+--> src/extractor.rs:17:5
+   |
+17 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compiler::Compiler`
+ warning: unused import: `super::compiler::Compiler`
+ --> src/executor.rs:1:5
+  |
+1 | use super::compiler::Compiler;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^--> src/executor.rs:1:5
+  |
+1 | use super::compiler::Compiler;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `super::extractor::Extractor`
+ warning: unused import: `super::extractor::Extractor`
+ --> src/executor.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--> src/executor.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `super::executor::Executor`
+ warning: unused import: `super::executor::Executor`
+ --> src/executor.rs:3:5
+  |
+3 | use super::executor::Executor;
+  --> src/executor.rs:3:5
+  |
+3 | use super::executor::Executor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_config_item::PerfConfigItem`
+ warning: unused import: `super::perf_config_item::PerfConfigItem`
+ --> src/executor.rs:6:5
+  |
+6 | use super::perf_config_item::PerfConfigItem;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--> src/executor.rs:6:5
+  |
+6 | use super::perf_config_item::PerfConfigItem;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `super::iterator_meta::IteratorMeta`
+ warning: unused import: `super::iterator_meta::IteratorMeta`
+ --> src/executor.rs:9:5
+  |
+9 | use super::iterator_meta::IteratorMeta;
+  --> src/executor.rs:9:5
+  |
+9 | use super::iterator_meta::IteratorMeta;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ast_node::ASTNode`warning: unused import: `super::ast_node::ASTNode`
+  --> src/executor.rs:11:5
+   |
+11 | use super::ast_node::ASTNode;
+  --> src/executor.rs:11:5
+   |
+11 | use super::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ast_node::Node`
+  warning: unused import: `super::ast_node::Node`
+  --> src/executor.rs:12:5
+   |
+12 | use super::ast_node::Node;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+--> src/executor.rs:12:5
+   |
+12 | use super::ast_node::Node;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `std::process::Command`
+  --> src/executor.rs:16:5
+   |
+warning: unused import: `std::process::Command`
+  --> src/executor.rs:16:5
+   |
+16 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+16 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`
+warning: unused import: `serde_json::Value`
+  --> src/executor.rs:17:5
+   |
+17  --> src/executor.rs:17:5
+   |
+17 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+ | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> src/executor.rs:19:5
+   |
+19 warning: unused import: `std::collections::HashMap`
+  --> src/executor.rs:19:5
+   |
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+| use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  --> src/executor.rs:20:5warning: unused import: `std::process::Command`
+  --> src/executor.rs:20:5
+   |
+20 | use std::process::Command;
+   |     
+   |
+20 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`
+warning: unused import: `serde_json::Value`
+  --> src/executor.rs:21:5
+   |
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+  --> src/executor.rs:21:5
+   |
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `super::compiler::Compiler`
+ warning: unused import: `super::compiler::Compiler`
+ --> src/registry.rs:1:5
+  |
+1 | use super::compiler::Compiler;
+  |     --> src/registry.rs:1:5
+  |
+1 | use super::compiler::Compiler;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::extractor::Extractor`
+warning: unused import: `super::extractor::Extractor`
+ --> src/registry.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |  --> src/registry.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::executor::Executor`
+ warning: unused import: `super::executor::Executor`
+ --> src/registry.rs:3:5
+  |
+3 | use super::executor::Executor;
+  |     --> src/registry.rs:3:5
+  |
+3 | use super::executor::Executor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::registry::Registry`
+ warning: unused import: `super::registry::Registry`
+ --> src/registry.rs:4:5
+  |
+4 | use super::registry::Registry;--> src/registry.rs:4:5
+  |
+4 | use super::registry::Registry;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::type_kind::TypeKind`
+ warning: unused import: `super::type_kind::TypeKind`
+ --> src/registry.rs:7:5
+  |
+7 | use super::type_kind::TypeKind;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+--> src/registry.rs:7:5
+  |
+7 | use super::type_kind::TypeKind;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `super::eth_call::EthCall`
+ warning: unused import: `super::eth_call::EthCall`
+ --> src/registry.rs:8:5
+  |
+8 | use super::eth_call::EthCall;
+  --> src/registry.rs:8:5
+  |
+8 | use super::eth_call::EthCall;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::iterator_meta::IteratorMeta`
+ --> src/registry.rs:9:5warning: unused import: `super::iterator_meta::IteratorMeta`
+ --> src/registry.rs:9:5
+  |
+9 | use super::iterator_meta::IteratorMeta;
+  |     
+  |
+9 | use super::iterator_meta::IteratorMeta;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`
+  warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/registry.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--> src/registry.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `std::process::Command`
+  warning: unused import: `std::process::Command`
+  --> src/registry.rs:15:5
+   |
+15 | use std::process::Command;
+   --> src/registry.rs:15:5
+   |
+15 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compiler::Compiler`
+ --> src/executable.rs:1:5
+  |
+warning: unused import: `super::compiler::Compiler`
+ --> src/executable.rs:1:5
+  |
+1 | use super::compiler::Compiler;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1 | use super::compiler::Compiler;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::extractor::Extractor`
+ warning: unused import: `super::extractor::Extractor`
+ --> src/executable.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--> src/executable.rs:2:5
+  |
+2 | use super::extractor::Extractor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+warning: unused import: `super::executor::Executor`
+ warning: unused import: `super::executor::Executor`
+ --> src/executable.rs:3:5
+  |
+3 | use super::executor::Executor;
+--> src/executable.rs:3:5
+  |
+3 | use super::executor::Executor;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::registry::Registry`
+ --> src/executable.rs:4:5
+  |warning: unused import: `super::registry::Registry`
+ --> src/executable.rs:4:5
+  |
+4 | use super::registry::Registry;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+4 | use super::registry::Registry;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::executable::Executable`
+ --> src/executable.rs:5:5
+  |
+5 |warning: unused import: `super::executable::Executable`
+ --> src/executable.rs:5:5
+  |
+5 | use super::executable::Executable;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::eth_call::EthCall`
+  use super::executable::Executable;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::eth_call::EthCall`
+ --> src/executable.rs:8:5
+  |
+8 | use super::eth_call::EthCall;--> src/executable.rs:8:5
+  |
+8 | use super::eth_call::EthCall;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/executable.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     
+  --> src/executable.rs:10:5
+   |
+10 | use super::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ast_node::ASTNode`
+  warning: unused import: `super::ast_node::ASTNode`
+  --> src/executable.rs:11:5
+   |
+11 | use super::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+--> src/executable.rs:11:5
+   |
+11 | use super::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> src/executable.rs:15:5
+   |
+warning: unused import: `std::collections::HashMap`
+  --> src/executable.rs:15:5
+   |
+15 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+15 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  --> src/executable.rs:16:5warning: unused import: `std::process::Command`
+  --> src/executable.rs:16:5
+   |
+16 | use std::process::Command;
+   | 
+   |
+16 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`
+  --> src/executable.rs:17:5
+   |
+17 | use serde_json::Value;
+
+  --> src/executable.rs:17:5
+   |
+17 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> 
+warning: unused import: `std::collections::HashMap`
+  --> src/executable.rs:19:5
+   |
+19 | use std::collections::HashMap;
+   src/executable.rs:19:5
+   |
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  warning: unused import: `std::process::Command`
+  --> src/executable.rs:20:5
+   |
+20 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^--> src/executable.rs:20:5
+   |
+20 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `serde_json::Value`
+  warning: unused import: `serde_json::Value`
+  --> src/executable.rs:21:5
+   |
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+--> src/executable.rs:21:5
+   |
+21 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+warning: unused import: `std::collections::HashMap`
+ --> src/eth_call.rs:1:5
+  |
+1 | use std::collections::HashMap; --> src/eth_call.rs:1:5
+  |
+1 | use std::collections::HashMap;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::fs`
+ --> src/eth_call.rs:2:5warning: unused import: `std::fs`
+ --> src/eth_call.rs:2:5
+  |
+2 | use std::fs;
+  
+  |
+2 | use std::fs;
+  |     ^^^^^^^
+
+|     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+ warning: unused import: `std::path::Path`
+ --> src/eth_call.rs:3:5
+  |
+3 | use std::path::Path;
+  |     ^^^^^^^^^^^^^^^--> src/eth_call.rs:3:5
+  |
+3 | use std::path::Path;
+  |     ^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `serde_json::json`
+ warning: unused import: `serde_json::json`
+ --> src/eth_call.rs:4:5
+  |
+4 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^--> src/eth_call.rs:4:5
+  |
+4 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `reqwest::Client`
+ --> src/eth_call.rs:5:5
+  |
+5 |warning: unused import: `reqwest::Client`
+ --> src/eth_call.rs:5:5
+  |
+5 | use reqwest::Client;
+  |     ^^^^^^^^^^^^^^^
+
+ use reqwest::Client;
+  |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::compiler::Compiler`
+  warning: unused import: `crate::compiler::Compiler`
+  --> src/iterator_meta.rs:13:5
+   |
+13 | use crate::compiler::Compiler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+--> src/iterator_meta.rs:13:5
+   |
+13 | use crate::compiler::Compiler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::extractor::Extractor`
+warning: unused import: `crate::extractor::Extractor`
+  --> src/iterator_meta.rs:14:5
+   |
+14 | use crate::extractor::Extractor;
+     --> src/iterator_meta.rs:14:5
+   |
+14 | use crate::extractor::Extractor;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning|     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::registry::Registry`
+  --> src/iterator_meta.rs:16:5
+   |
+16 | use crate::registry::Registry;
+   : unused import: `crate::registry::Registry`
+  --> src/iterator_meta.rs:16:5
+   |
+16 | use crate::registry::Registry;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::eth_call::EthCall`
+  warning: unused import: `crate::eth_call::EthCall`
+  --> src/iterator_meta.rs:17:5
+   |
+17 | use crate::eth_call::EthCall;
+--> src/iterator_meta.rs:17:5
+   |
+17 | use crate::eth_call::EthCall;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::type_kind::TypeKind`
+warning: unused import: `crate::type_kind::TypeKind`
+  --> src/iterator_meta.rs:18:5
+   |
+18  --> src/iterator_meta.rs:18:5
+   |
+18 | use crate::type_kind::TypeKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ | use crate::type_kind::TypeKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::executor::Executor`
+  --> src/iterator_meta.rs:20:5
+   |
+20
+warning: unused import: `crate::executor::Executor`
+  --> src/iterator_meta.rs:20:5
+   |
+20 | use crate::executor::Executor;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ | use crate::executor::Executor;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/iterator_meta.rs:21:5
+warning: unused import: `crate::perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/iterator_meta.rs:21:5
+   |
+21 | use crate::perf_expression_evaluator::PerfExpressionEvaluator;
+   |        |
+21 | use crate::perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::ast_node::Node`
+  --> src/iterator_meta.rs:23:5
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::ast_node::Node`
+  --> src/iterator_meta.rs:23:5
+   |
+23 | use crate::ast_node::Node;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+|
+23 | use crate::ast_node::Node;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::ast_node::ASTNode`
+  warning: unused import: `crate::ast_node::ASTNode`
+  --> src/iterator_meta.rs:24:5
+   |
+24 | use crate::ast_node::ASTNode;
+--> src/iterator_meta.rs:24:5
+   |
+24 | use crate::ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> src/iterator_meta.rs:26:5
+   |
+26 |warning: unused import: `std::collections::HashMap`
+  --> src/iterator_meta.rs:26:5
+   |
+26 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  warning: unused import: `std::process::Command`
+  --> src/iterator_meta.rs:27:5
+   |
+27 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+--> src/iterator_meta.rs:27:5
+   |
+27 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`
+  --> src/iterator_meta.rs:28:5
+   |
+28 warning: unused import: `serde_json::Value`
+  --> src/iterator_meta.rs:28:5
+   |
+28 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+ --> src/ast_node.rs:2:5
+  |
+2 | use std::process::Command;
+  |     ^^^^^^^^^^^^^^^^^^^^^| use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+ --> src/ast_node.rs:2:5
+  |
+2 | use std::process::Command;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `compiler::Compiler`
+  --> src/main.rs:15:5
+   |
+15 | use compiler::Compiler;
+   
+
+warning: unused import: `compiler::Compiler`
+  --> src/main.rs:15:5
+   |
+15 | use compiler::Compiler;
+   |     ^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^
+
+warningwarning: unused import: `executor::Executor`
+  --> src/main.rs:17:5
+   |
+17 | use executor::Executor;: unused import: `executor::Executor`
+  --> src/main.rs:17:5
+   |
+17 | use executor::Executor;
+   |     ^^^^^^^^^^^^^^^^^^
+
+
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `registry::Registry`
+  --> src/main.rs:18:5
+   |
+18warning: unused import: `registry::Registry`
+  --> src/main.rs:18:5
+   |
+18 | use registry::Registry;
+   |     ^^^^^^^^^^^^^^^^^^
+
+ | use registry::Registry;
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `executable::Executable`
+  warning: unused import: `executable::Executable`
+  --> src/main.rs:19:5
+   |
+19 | use executable::Executable;
+   | --> src/main.rs:19:5
+   |
+19 | use executable::Executable;
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `perf_config_item::PerfConfigItem`
+  --> src/main.rs:20:5
+   |
+20 | use perf_config_item::PerfConfigItem;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `perf_config_item::PerfConfigItem`
+  --> src/main.rs:20:5
+   |
+20 | use perf_config_item::PerfConfigItem;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `type_kind::TypeKind`
+  warning: unused import: `type_kind::TypeKind`
+  --> src/main.rs:21:5
+   |
+21 | use type_kind::TypeKind;
+   |     --> src/main.rs:21:5
+   |
+21 | use type_kind::TypeKind;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `eth_call::EthCall`
+  warning: unused import: `eth_call::EthCall`
+  --> src/main.rs:22:5
+   |
+22 | use eth_call::EthCall;
+   |     ^^^^^^^^^^^^^^^^^
+
+--> src/main.rs:22:5
+   |
+22 | use eth_call::EthCall;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `iterator_meta::IteratorMeta`
+  --> src/main.rs:23:5
+   |
+23 | warning: unused import: `iterator_meta::IteratorMeta`
+  --> src/main.rs:23:5
+   |
+23 | use iterator_meta::IteratorMeta;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+use iterator_meta::IteratorMeta;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/main.rs:24:5
+warning: unused import: `perf_expression_evaluator::PerfExpressionEvaluator`
+  --> src/main.rs:24:5
+   |
+24 | use perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   |
+24 | use perf_expression_evaluator::PerfExpressionEvaluator;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ast_node::ASTNode`
+  --> src/main.rs:25:5
+   |
+25 | use ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^
+
+
+
+warning: unused import: `ast_node::ASTNode`
+  --> src/main.rs:25:5
+   |
+25 | use ast_node::ASTNode;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ast_node::Node`
+  warning: unused import: `ast_node::Node`
+  --> src/main.rs:26:5
+   |
+26 | use ast_node::Node;
+   |     ^^^^^^^^^^^^^^
+--> src/main.rs:26:5
+   |
+26 | use ast_node::Node;
+   |     ^^^^^^^^^^^^^^
+
+
+warning: unused import: `std::collections::HashMap`
+  warning: unused import: `std::collections::HashMap`
+  --> src/main.rs:28:5
+   |
+28 | use std::collections::HashMap;
+   --> src/main.rs:28:5
+   |
+28 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::process::Command`
+  warning: unused import: `std::process::Command`
+  --> src/main.rs:29:5
+   |
+29 | use std::process::Command;
+   --> src/main.rs:29:5
+   |
+29 | use std::process::Command;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+|     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::Value`
+  warning: unused import: `serde_json::Value`
+  --> src/main.rs:30:5
+   |
+30 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+--> src/main.rs:30:5
+   |
+30 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `clone` found for struct `Registry` in the current scope
+  --> src/extractor.rs:31:47
+   |
+31 |         let executor = Executor::new(registry.clone());
+   |                                               ^^^^^ error[E0599]: no method named `clone` found for struct `Registry` in the current scope
+  --> src/extractor.rs:31:47
+   |
+31 |         let executor = Executor::new(registry.clone());
+   |                                               ^^^^^ method not found in `Registry<'_>`
+   |
+  ::: src/registry.rs:18:1
+   |
+18 | pub struct Registry<'registry_lifetime> {
+   | --------------------------------------- method `clone` not found for this struct
+   |
+method not found in `Registry<'_>`
+   |
+  ::: src/registry.rs:18:1
+   |
+18 | pub struct Registry<'registry_lifetime> {
+   | --------------------------------------- method `clone` not found for this struct
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the following trait defines an item `clone`, perhaps you need to implement it:
+           candidate #1: `Clone`   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the following trait defines an item `clone`, perhaps you need to implement it:
+           candidate #1: `Clone`
+
+
+
+error[E0599]: no function or associated item named `new` found for struct `Executable` in the current scope
+  --> src/extractor.rs:56:38
+   |
+56 |             let member = Executable::new(
+   error[E0599]: no function or associated item named `new` found for struct `Executable` in the current scope
+  --> src/extractor.rs:56:38
+   |
+56 |             let member = Executable::new(
+   |                                      ^^^ function or associated item not found in `Executable<'_>`
+   |
+  ::: src/executable.rs:25:1
+|                                      ^^^ function or associated item not found in `Executable<'_>`
+   |
+  ::: src/executable.rs:25:1
+   |
+25 | pub struct Executable<'executable_lifetime> {
+      |
+25 | pub struct Executable<'executable_lifetime> {
+   | ------------------------------------------- function or associated item `new` not found for this struct
+   |
+   = | ------------------------------------------- function or associated item `new` not found for this struct
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_edfs` found for reference `&&Executable<'_>` in the current scope
+  --> src/executor.rs:41:108
+   |
+41 | ...[step].iter().map(|executable| (executable.get_edfs(), executable.get_abs_slot().unwrap_or_default())).collect();
+   |                                               ^^^^^^^^ method not found in `&&Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+error[E0599]: no method named `get_edfs` found for reference `&&Executable<'_>` in the current scope
+  --> src/executor.rs:41:108
+   |
+41 | ...[step].iter().map(|executable| (executable.get_edfs(), executable.get_abs_slot().unwrap_or_default())).collect();
+   |                                               ^^^^^^^^ method not found in `&&Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_abs_slot` found for reference `&&Executable<'_>` in the current scope
+  --> src/executor.rs:41:131
+   |
+41 | ...able| (executable.get_edfs(), executable.get_abs_slot().unwrap_or_default())).collect();
+   |                                             ^^^^^^^^^^^^ method not found in `&&Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   error[E0599]: no method named `get_abs_slot` found for reference `&&Executable<'_>` in the current scope
+  --> src/executor.rs:41:131
+   |
+41 | ...able| (executable.get_edfs(), executable.get_abs_slot().unwrap_or_default())).collect();
+   |                                             ^^^^^^^^^^^^ method not found in `&&Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+|
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no function or associated item named `get_values_by_slots` found for struct `EthCall` in the current scope
+  --> src/executor.rs:42:31
+   |
+42 | ...   let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x123456789012345678901...
+   |                             ^^^^^^^^^^^^^^^^^^^ function or associated item not found in `EthCall`
+   |
+  ::: error[E0599]: no function or associated item named `get_values_by_slots` found for struct `EthCall` in the current scope
+  --> src/executor.rs:42:31
+   |
+42 | ...   let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x123456789012345678901...
+   |                             ^^^^^^^^^^^^^^^^^^^ function or associated item not found in `EthCall`
+   |
+  ::: src/eth_call.rs:8:1
+   |
+8  | pub struct EthCall;
+   | ------------------ function or associated item `get_values_by_slots` not found for this struct
+
+src/eth_call.rs:8:1
+   |
+8  | pub struct EthCall;
+   | ------------------ function or associated item `get_values_by_slots` not found for this struct
+
+error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:50:82
+   |
+50 |             let perf_config_item = self.registry.get_perf_config_item(executable.get_edfs());
+   |                                                                                  ^^^^^^^^ error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:50:82
+   |
+50 |             let perf_config_item = self.registry.get_perf_config_item(executable.get_edfs());
+   |                                                                                  ^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `set_value` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:53:24
+   |
+53 |             executable.set_value(values[executable.get_edfs()]);
+   |                        ^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   error[E0599]: no method named `set_value` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:53:24
+   |
+53 |             executable.set_value(values[executable.get_edfs()]);
+   |                        ^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+|
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:53:52
+   |
+53 |             executable.set_value(values[executable.get_edfs()]);
+   |                                                    ^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:53:52
+   |
+53 |             executable.set_value(values[executable.get_edfs()]);
+   |                                                    ^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+
+error[E0599]: no method named `get_type_kind` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:55:27
+   |
+55 |             if executable.get_type_kind() == TypeKind::Primitive {
+   |                           ^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1error[E0599]: no method named `get_type_kind` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:55:27
+   |
+55 |             if executable.get_type_kind() == TypeKind::Primitive {
+   |                           ^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:57:53
+   |
+57 |                 self.registry.set_output(executable.get_edfs(), executable.clone());
+   |                                                     ^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_edfs` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:57:53
+   |
+57 |                 self.registry.set_output(executable.get_edfs(), executable.clone());
+   |                                                     ^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0308]: mismatched types
+  --> error[E0308]: mismatched types
+  --> src/executor.rs:57:65
+   |
+57 |                 self.registry.set_output(executable.get_edfs(), executable.clone());
+   |                               ----------                        src/executor.rs:57:65
+   |
+57 |                 self.registry.set_output(executable.get_edfs(), executable.clone());
+   |                               ----------                        ^^^^^^^^^^^^^^^^^^ expected `&Executable<'_>`, found `Executable<'_>`
+   |                               |
+   ^^^^^^^^^^^^^^^^^^ expected `&Executable<'_>`, found `Executable<'_>`
+   |                               |
+   |                               arguments to this method are incorrect
+   |
+note: method defined here
+|                               arguments to this method are incorrect
+   |
+note: method defined here
+  --> src/registry.rs:34:12
+   |
+34 |   --> src/registry.rs:34:12
+   |
+34 |     pub fn set_output(&mut self, edfs: String, e: &Executable) {
+   |            ^^^^^^^^^^                          --------------
+help    pub fn set_output(&mut self, edfs: String, e: &Executable) {
+   |            ^^^^^^^^^^                          --------------
+help: try removing the method call
+   |
+57 -                 self.registry.set_output(executable.get_edfs(), executable.clone(): try removing the method call
+   |
+57 -                 self.registry.set_output(executable.get_edfs(), executable.clone());
+57 +                 self.registry.set_output(executable.get_edfs(), executable);
+   |
+);
+57 +                 self.registry.set_output(executable.get_edfs(), executable);
+   |
+
+
+error[E0599]: no method named `get_iter_mut` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:62:53
+   |
+62 |                 if let Some(iter) = &mut executable.get_iter_mut() {
+   |                                                     ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`error[E0599]: no method named `get_iter_mut` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:62:53
+   |
+62 |                 if let Some(iter) = &mut executable.get_iter_mut() {
+   |                                                     ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   : the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+|
+
+error[E0599]: no method named `clone_box` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:67:61
+error[E0599]: no method named `clone_box` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:67:61
+   |
+67    |
+67 | ...                   let new_executable = executable.clone_box();
+   |                                                       ^^^^^^^^^ | ...                   let new_executable = executable.clone_box();
+   |                                                       ^^^^^^^^^ method not found in `&mut &Executable<'_>`
+
+method not found in `&mut &Executable<'_>`
+
+error[E0616]: field `from` of struct `PerfConfigItem` is private
+  --> src/executor.rs:72:94
+   |
+72 |                         let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
+   |                                                                                              ^^^^ private field
+error[E0616]: field `from` of struct `PerfConfigItem` is private
+  --> src/executor.rs:72:94
+   |
+72 |                         let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
+   |                                                                                              ^^^^ private field
+
+
+error[E0616]: field `to` of struct `PerfConfigItem` is private
+  --> src/executor.rs:73:92
+   |
+73 |                         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
+   |                                                                                            ^^ private fielderror[E0616]: field `to` of struct `PerfConfigItem` is private
+  --> src/executor.rs:73:92
+   |
+73 |                         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
+   |                                                                                            ^^ private field
+
+
+
+error[E0061]: this function takes 2 arguments but 1 argument was supplied
+  --> error[E0061]: this function takes 2 arguments but 1 argument was supplied
+  --> src/executor.rs:76:47
+   |
+76 | ...                   let parsed_from = PerfExpressionEvaluator::eval(from_expr);
+   | src/executor.rs:76:47
+   |
+76 | ...                   let parsed_from = PerfExpressionEvaluator::eval(from_expr);
+   |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^----------- an argument of type `std::string::String` is missing
+   |
+note                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^----------- an argument of type `std::string::String` is missing
+   |
+note: method defined here
+  --> src/perf_expression_evaluator.rs:4:12
+   |
+4  : method defined here
+  --> src/perf_expression_evaluator.rs:4:12
+   |
+4  |     pub fn eval(&self, expression: String) -> usize {
+   |            ^^^^ -----|     pub fn eval(&self, expression: String) -> usize {
+   |            ^^^^ -----  ------------------
+help: provide the argument
+   |
+76  ------------------
+help: provide the argument
+   |
+76 |                             let parsed_from = PerfExpressionEvaluator::eval(from_expr, /* std::string::String */);
+   |                                                                             |                             let parsed_from = PerfExpressionEvaluator::eval(from_expr, /* std::string::String */);
+   |                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0061]: this function takes 2 arguments but 1 argument was supplied
+  error[E0061]: this function takes 2 arguments but 1 argument was supplied
+  --> src/executor.rs:81:45
+   |
+81 | ...                   let parsed_to = PerfExpressionEvaluator::eval(to_expr);
+   |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--> src/executor.rs:81:45
+   |
+81 | ...                   let parsed_to = PerfExpressionEvaluator::eval(to_expr);
+   |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--------- an argument of type `std::string::String` is missing
+   |
+note: method defined here
+  --> src/perf_expression_evaluator.rs:4:12
+--------- an argument of type `std::string::String` is missing
+   |
+note: method defined here
+  --> src/perf_expression_evaluator.rs:4:12
+   |
+4  |     pub fn eval(&self, expression: String) -> usize {
+      |
+4  |     pub fn eval(&self, expression: String) -> usize {
+   |            ^^^^ -----  ------------------
+help: provide the argument|            ^^^^ -----  ------------------
+help: provide the argument
+   |
+81 |                             let parsed_to = PerfExpressionEvaluator::eval(to_expr, /* std::string::String */);
+   |                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+   |
+81 |                             let parsed_to = PerfExpressionEvaluator::eval(to_expr, /* std::string::String */);
+   |                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+error[E0599]: no method named `increment_step` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:87:40
+   |
+87 | ...                   executable.increment_step();
+   |                                  ^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `increment_step` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:87:40
+   |
+87 | ...                   executable.increment_step();
+   |                                  ^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `enqueue_execution` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:88:40
+   |
+88 | ...                   executable.enqueue_execution();
+   |                                  ^^^^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `enqueue_execution` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:88:40
+   |
+88 | ...                   executable.enqueue_execution();
+   |                                  ^^^^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_children` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:90:55
+   |
+90 | ...                   let children = executable.get_children();
+   |                                                 ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1error[E0599]: no method named `get_children` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:90:55
+   |
+90 | ...                   let children = executable.get_children();
+   |                                                 ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_abs_slot` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:99:35
+   |
+99 |                     if executable.get_abs_slot().is_some() && executable.get_value().is_none() {
+   |                                   ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:error[E0599]: no method named `get_abs_slot` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:99:35
+   |
+99 |                     if executable.get_abs_slot().is_some() && executable.get_value().is_none() {
+   |                                   ^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `get_value` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:99:74
+   |
+99 |                     if executable.get_abs_slot().is_some() && executable.get_value().is_none() {
+   |                                                                          ^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   error[E0599]: no method named `get_value` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+  --> src/executor.rs:99:74
+   |
+99 |                     if executable.get_abs_slot().is_some() && executable.get_value().is_none() {
+   |                                                                          ^^^^^^^^^ method not found in `&mut &Executable<'_>`
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+   |
+1  + use crate::executable::ExecutableT;
+   |
+
+|
+1  + use crate::executable::ExecutableT;
+   |
+
+error[E0599]: no method named `enqueue_execution` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+   --> src/executor.rs:101:36
+    |
+101 |                         executable.enqueue_execution();
+    |                                    ^^^^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+error[E0599]: no method named `enqueue_execution` found for mutable reference `&mut &'static Executable<'_>` in the current scope
+   --> src/executor.rs:101:36
+    |
+101 |                         executable.enqueue_execution();
+    |                                    ^^^^^^^^^^^^^^^^^ method not found in `&mut &Executable<'_>`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+    |
+1   + use crate::executable::ExecutableT;
+    |    |
+1   + use crate::executable::ExecutableT;
+    |
+
+
+
+error[E0277]: the trait bound `TypeKind: Clone` is not satisfied
+  --> src/executable.rs:29:5
+error[E0277]: the trait bound `TypeKind: Clone` is not satisfied
+  --> src/executable.rs:29:5
+   |
+24 | #[derive(Clone)]
+   |    |
+24 | #[derive(Clone)]
+   |          ----- in this derive macro expansion
+...
+29 |         ----- in this derive macro expansion
+...
+29 |     type_kind: TypeKind,
+   |     ^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `TypeKind`
+     type_kind: TypeKind,
+   |     ^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `TypeKind`
+   |
+   = note: this error originates in the derive macro `Clone` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `TypeKind` with `#[derive(Clone)]`   |
+   = note: this error originates in the derive macro `Clone` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `TypeKind` with `#[derive(Clone)]`
+  --> src/type_kind.rs:1:1
+   |
+1  + #[derive(Clone)]
+2  | pub enum TypeKind {
+   |
+
+
+  --> src/type_kind.rs:1:1
+   |
+1  + #[derive(Clone)]
+2  | pub enum TypeKind {
+   |
+
+error[E0277]: the trait bound `IteratorMeta: Clone` is not satisfied
+  --> src/executable.rs:38:5
+   |
+24 | #[derive(Clone)]
+   |          error[E0277]: the trait bound `IteratorMeta: Clone` is not satisfied
+  --> src/executable.rs:38:5
+   |
+24 | #[derive(Clone)]
+   |          ----- in this derive macro expansion
+...
+38 |     iter: Option<IteratorMeta>,
+----- in this derive macro expansion
+...
+38 |     iter: Option<IteratorMeta>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `IteratorMeta`, which is required by `Option<IteratorMeta>: Clone`
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `IteratorMeta`, which is required by `Option<IteratorMeta>: Clone`
+   |
+   = note: required for `Option<IteratorMeta>` to implement `Clone`
+   = note   |
+   = note: required for `Option<IteratorMeta>` to implement `Clone`
+   = note: this error originates in the derive macro `Clone` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+: this error originates in the derive macro `Clone` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0071]: expected struct, variant or union type, found type parameter `Self`
+  --> error[E0071]: expected struct, variant or union type, found type parameter `Self`
+  --> src/executable.rs:55:9
+   |
+55 |         Self {
+   |         ^^^^ not a struct
+
+src/executable.rs:55:9
+   |
+55 |         Self {
+   |         ^^^^ not a struct
+
+error[E0277]: the size for values of type `Self` cannot be known at compilation time
+  --> src/executable.rs:54:10
+   |
+54 |     ) -> Self {
+   |          ^^^^ doesn't have a size known at compile-time
+   |
+   = note: the return type of a function must have a statically known size
+help: consider further restricting `Self`
+   |
+54 |     ) -> Self where Self: Sized {
+   |error[E0277]: the size for values of type `Self` cannot be known at compilation time
+  --> src/executable.rs:54:10
+   |
+54 |     ) -> Self {
+   |          ^^^^ doesn't have a size known at compile-time
+   |
+   = note: the return type of a function must have a statically known size
+help: consider further restricting `Self`
+   |
+54 |     ) -> Self where Self: Sized {
+   |               +++++++++++++++++
+
+               +++++++++++++++++
+
+error[E0609]: no field `type_kind` on type `&Self`
+  --> error[E0609]: no field `type_kind` on type `&Self`
+  --> src/executable.rs:73:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+src/executable.rs:73:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+73 |         self.type_kind.is_iterish();
+   |              ...
+73 |         self.type_kind.is_iterish();
+   |              ^^^^^^^^^ unknown field
+
+^^^^^^^^^ unknown field
+
+error[E0308]: mismatched types
+  error[E0308]: mismatched types
+  --> src/executable.rs:72:38
+   |
+72 |       pub fn is_iterish(&self) -> bool {
+--> src/executable.rs:72:38
+   |
+72 |       pub fn is_iterish(&self) -> bool {
+   |  ______________________________________^
+73 | |   |  ______________________________________^
+73 | |         self.type_kind.is_iterish();
+74 | |     }         self.type_kind.is_iterish();
+74 | |     }
+   | |_____^ expected `bool`, found `()`
+
+
+   | |_____^ expected `bool`, found `()`
+
+error[E0308]: mismatched types
+  error[E0308]: mismatched types
+  --> src/executable.rs:77:38
+   |
+77 |       pub fn get_edfs(&self) -> String {
+   |  ______________________________________^
+--> src/executable.rs:77:38
+   |
+77 |       pub fn get_edfs(&self) -> String {
+   |  ______________________________________^
+78 | |     }
+   | |_____^ expected `String`, found `()`
+
+78 | |     }
+   | |_____^ expected `String`, found `()`
+
+error[E0308]: mismatched types
+  error[E0308]: mismatched types
+  --> src/executable.rs:80:47
+   |
+80 |       pub fn get_type_and_name(&self) -> String {
+   |  _______________________________________________^--> src/executable.rs:80:47
+   |
+80 |       pub fn get_type_and_name(&self) -> String {
+   |  _______________________________________________^
+81 | |         // Implement the logic to get the type and name for a Member
+82 | |         // ...
+83 | |     }
+   | 
+81 | |         // Implement the logic to get the type and name for a Member
+82 | |         // ...
+83 | |     }
+   | |_____^ expected `String`, found `()`
+
+|_____^ expected `String`, found `()`
+
+error[E0609]: no field `type_kind` on type `&Self`
+  error[E0609]: no field `type_kind` on type `&Self`
+  --> src/executable.rs:86:14
+   |
+42 | trait ExecutableT {--> src/executable.rs:86:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+86
+   | ----------------- type parameter 'Self' declared here
+...
+86 |  |         self.type_kind.clone()
+   |              ^^^^^^^^^ unknown field
+
+        self.type_kind.clone()
+   |              ^^^^^^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&Self`
+  --> src/executable.rs:90:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+90 |         self.iter.as_ref()
+   |              ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&Self`
+  --> src/executable.rs:90:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+90 |         self.iter.as_ref()
+   |              ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&mut Self`
+  --> error[E0609]: no field `iter` on type `&mut Self`
+  --> src/executable.rs:94:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+src/executable.rs:94:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+94 |         self.iter.as_mut()
+   |              ...
+94 |         self.iter.as_mut()
+   |              ^^^^ unknown field
+
+^^^^ unknown field
+
+error[E0609]: no field `absolute_slot` on type `&Self`
+  error[E0609]: no field `absolute_slot` on type `&Self`
+  --> src/executable.rs:98:14
+   |
+42 | trait ExecutableT {
+   | ----------------- --> src/executable.rs:98:14
+   |
+42 | trait ExecutableT {
+   | ----------------- type parameter 'Self' declared here
+...
+98 |         self.absolute_slot.clone()
+   | type parameter 'Self' declared here
+...
+98 |         self.absolute_slot.clone()
+   |              ^^^^^^^^^^^^^ unknown field
+
+             ^^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `value` on type `&Self`
+   --> src/executable.rs:102:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+102 |         self.value.clone()
+    |              ^^^^^ unknown field
+
+error[E0609]: no field `value` on type `&Self`
+   --> src/executable.rs:102:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+102 |         self.value.clone()
+    |              ^^^^^ unknown field
+
+error[E0609]: no field `step` on type `&mut Self`
+   error[E0609]: no field `step` on type `&mut Self`
+   --> src/executable.rs:106:14
+    |
+42  | trait ExecutableT {
+    | --> src/executable.rs:106:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+106 |         self.step += 1;----------------- type parameter 'Self' declared here
+...
+106 |         self.step += 1;
+    |              ^^^^ unknown field
+
+
+    |              ^^^^ unknown field
+
+error[E0609]: no field `belongs_to` on type `&Self`
+   --> src/executable.rs:110:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...error[E0609]: no field `belongs_to` on type `&Self`
+   --> src/executable.rs:110:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+110 |         self.belongs_to.as_ref()
+    | 
+110 |         self.belongs_to.as_ref()
+    |              ^^^^^^^^^^ unknown field
+
+             ^^^^^^^^^^ unknown field
+
+error[E0609]: no field `registry` on type `&Self`
+   error[E0609]: no field `registry` on type `&Self`
+   --> src/executable.rs:114:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+114 |         self.registry.queue_per_step.insert(self.step, self);
+    |              ^^^^^^^^ --> src/executable.rs:114:14
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+114 |         self.registry.queue_per_step.insert(self.step, self);
+    |              ^^^^^^^^ unknown field
+
+unknown field
+
+error[E0609]: no field `step` on type `&Self`
+   --> error[E0609]: no field `step` on type `&Self`
+   --> src/executable.rs:114:50
+    |
+42  | trait ExecutableT {
+    | src/executable.rs:114:50
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+114 | ----------------- type parameter 'Self' declared here
+...
+114 |         self.registry.queue_per_step.insert(self.step, self);
+    |                                                  ^^^^ unknown field
+
+        self.registry.queue_per_step.insert(self.step, self);
+    |                                                  ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&Self`
+   error[E0609]: no field `iter` on type `&Self`
+   --> src/executable.rs:118:38
+    |
+42  | trait ExecutableT {
+--> src/executable.rs:118:38
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+118     | ----------------- type parameter 'Self' declared here
+...
+118 |         if self.is_iterish() && self.iter.as_ref().map(|i| i.to).is_some() {
+    | |         if self.is_iterish() && self.iter.as_ref().map(|i| i.to).is_some() {
+    |                                      ^^^^ unknown field
+
+                                     ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&Self`
+   --> src/executable.rs:120:39
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+120 |             if let Some(iter) = &self.iter {
+    |                                       ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&Self`
+   --> src/executable.rs:120:39
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+120 |             if let Some(iter) = &self.iter {
+    |                                       ^^^^ unknown field
+
+error[E0609]: no field `registry` on type `&Self`
+   --> src/executable.rs:123:41
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+123 |                     let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
+    |                                         ^^^^^^^^error[E0609]: no field `registry` on type `&Self`
+   --> src/executable.rs:123:41
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+123 |                     let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
+    |                                         ^^^^^^^^ unknown field
+
+ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:123:101
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+123 |                     let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
+    |                                                                                                     ^^^^ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:123:101
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+123 |                     let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
+    |                                                                                                     ^^^^ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:126:69
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+126 |                             let member_name = format!("{}.{}", self.name, member.name);
+    |                                                                     ^^^^ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:126:69
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+126 |                             let member_name = format!("{}.{}", self.name, member.name);
+    |                                                                     ^^^^ unknown field
+
+error[E0599]: no method named `clone_box` found for reference `&Self` in the current scope
+   --> src/executable.rs:141:38
+    |
+141 | ...                   self.clone_box(),
+    |                            ^^^^^^^^^ method not found in `&Self`
+
+error[E0599]: no method named `clone_box` found for reference `&Self` in the current scope
+   --> src/executable.rs:141:38
+    |
+141 | ...                   self.clone_box(),
+    |                            ^^^^^^^^^ method not found in `&Self`
+
+error[E0308]: mismatched types
+   --> src/executable.rs:143:37error[E0308]: mismatched types
+   --> src/executable.rs:143:37
+    |
+143 | / ...                   Some(IteratorMeta::new(
+144 | |
+    |
+143 | / ...                   Some(IteratorMeta::new(
+144 | | ...                       None, // key_type
+145 | | ... ...                       None, // key_type
+145 | | ...                       None, // perf_config
+146 | | ...                       Vec::new(), // items                       None, // perf_config
+146 | | ...                       Vec::new(), // items
+147 | | 
+147 | | ...                       0, // from
+148 | |...                       0, // from
+148 | | ...                       0, // to
+149 | |  ...                       0, // to
+149 | | ...                   ))
+    | |________________________^ expected `usize`, found `Option<IteratorMeta>`
+    ...                   ))
+    | |________________________^ expected `usize`, found `Option<IteratorMeta>`
+    |
+    = note: expected type `usize`
+               found enum `|
+    = note: expected type `usize`
+               found enum `Option<IteratorMeta>`
+
+Option<IteratorMeta>`
+
+error[E0308]: mismatched types
+   --> src/executable.rs:151:37
+    |
+151 | ...                   Noneerror[E0308]: mismatched types
+   --> src/executable.rs:151:37
+    |
+151 | ...                   None
+    |                       ^^^^ expected `usize`, found `Option<_>`
+    |
+    = note
+    |                       ^^^^ expected `usize`, found `Option<_>`
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+: expected type `usize`
+               found enum `Option<_>`
+
+error[E0061]: this function takes 10 arguments but 6 arguments were supplied
+   --> src/executable.rs:136:40
+    |
+136 |error[E0061]: this function takes 10 arguments but 6 arguments were supplied
+   --> src/executable.rs:136:40
+    |
+136 |   ...                   let item = Executable::new(
+    |  __________________________________^^^^^^^^^^^^^^^-
+137   ...                   let item = Executable::new(
+    |  __________________________________^^^^^^^^^^^^^^^-
+137 | | ...                       member_name,
+138 | | | ...                       member_name,
+138 | | ...                       member_type_kind,
+    | |                            | ...                       member_type_kind,
+    | |                           ---------------- expected `usize`, found `TypeKind`
+139 | | ...---------------- expected `usize`, found `TypeKind`
+139 | | ...                       member_value_type,
+...   |
+152 |                        member_value_type,
+...   |
+152 | | ...                       },
+153 | | | ...                       },
+153 | | ...                   );
+    | |_______________________- multiple arguments are missing
+    ...                   );
+    | |_______________________- multiple arguments are missing
+    |
+note: associated function defined here
+   --> src/executable.rs:43:12
+    |
+note: associated function defined here
+   --> src/executable.rs:43:12
+    |
+43  |     pub fn new(
+    | |
+43  |     pub fn new(
+    |            ^^^
+44  |         name: String,
+    |         ------------
+45  |         step: usize,
+    |         -----------
+46  |         belongs_to: Option<&Executable>,
+    |         -------------------------------
+           ^^^
+44  |         name: String,
+    |         ------------
+45  |         step: usize,
+    |         -----------
+46  |         belongs_to: Option<&Executable>,
+    |         -------------------------------
+47  |         type_kind: TypeKind,
+    |         -------------------
+47  |         type_kind: TypeKind,
+    |         -------------------
+48  |         value_type: String,
+    |         ------------------48  |         value_type: String,
+    |         ------------------
+49  |         offset: usize,
+    |         
+49  |         offset: usize,
+    |         -------------
+50  |         relative_slot: String,
+    |         -------------
+50  |         relative_slot: String,
+    |         ---------------------
+51  |         ast_node: Option<&'static Node>,
+    | ---------------------
+51  |         ast_node: Option<&'static Node>,
+    |         -------------------------------
+52  |         mapping_key: Option<String>,
+            -------------------------------
+52  |         mapping_key: Option<String>,
+    |         ---------------------------
+53  |         iter: Option<IteratorMeta>,
+|         ---------------------------
+53  |         iter: Option<IteratorMeta>,
+    |         --------------------------
+help: provide the arguments
+    |    |         --------------------------
+help: provide the arguments
+    |
+136 ~                             let item = Executable::new(member_name, /* usize */, member_value_type, member_relative_slot, self.clone_box(), if member_type_kind.is_iterish() {
+137 
+136 ~                             let item = Executable::new(member_name, /* usize */, member_value_type, member_relative_slot, self.clone_box(), if member_type_kind.is_iterish() {
+137 +                                     Some(IteratorMeta::new(
+138 +                                         None, // key_type
+139 +                                         None, // perf_config
++                                     Some(IteratorMeta::new(
+138 +                                         None, // key_type
+139 +                                         None, // perf_config
+140 +                                         Vec::new(), // items
+141 +                                         0, // from
+142 140 +                                         Vec::new(), // items
+141 +                                         0, // from
+142 +                                         0, // to
+143 +                                     ))
+144 +                                 } else {
++                                         0, // to
+143 +                                     ))
+144 +                                 } else {
+145 +                                     None
+146 ~                                 }, /* std::string::String */, /* Option<&'static Node> */, /* Option<std::string::String> */, /* Option<IteratorMeta> */);
+145 +                                     None
+146 ~                                 }, /* std::string::String */, /* Option<&'static Node> */, /* Option<std::string::String> */, /* Option<IteratorMeta> */);
+    |
+
+    |
+
+error[E0609]: no field `children` on type `&Self`
+   --> src/executable.rs:156:34error[E0609]: no field `children` on type `&Self`
+   --> src/executable.rs:156:34
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+156 |                             self.children.push(&item);
+    |                                  ^^^^^^^^
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+156 |                             self.children.push(&item);
+    |                                  ^^^^^^^^ unknown field
+
+ unknown field
+
+error[E0308]: mismatched types
+   --> src/executable.rs:166:18
+    |
+42  |error[E0308]: mismatched types
+   --> src/executable.rs:166:18
+    |
+42  | trait ExecutableT {
+    | ----------------- found this type parameter
+...
+163 | trait ExecutableT {
+    | ----------------- found this type parameter
+...
+163 |                     children.push(self);
+    |                     --------      ---- this argument has type `&Self`...
+    |                     |
+    |                     ... which causes `children` to have type `Vec<&Self>`
+...
+166                      children.push(self);
+    |                     --------      ---- this argument has type `&Self`...
+    |                     |
+    |                     ... which causes `children` to have type `Vec<&Self>`
+...
+166 |             Some(children)
+    |             ---- ^^^^^^^^ |             Some(children)
+    |             ---- ^^^^^^^^ expected `Vec<&Executable<'_>>`, found `Vec<&Self>`
+    |             |
+    |             expected `Vec<&Executable<'_>>`, found `Vec<&Self>`
+    |             |
+    |             arguments to this enum variant are incorrect
+    |
+    = note: expected struct `Vec<&Executable<'_>arguments to this enum variant are incorrect
+    |
+    = note: expected struct `Vec<&Executable<'_>>`
+               found struct `Vec<&Self>`
+help: the type constructed contains `Vec<&Self>` due to the type of the argument passed
+   >`
+               found struct `Vec<&Self>`
+help: the type constructed contains `Vec<&Self>` due to the type of the argument passed
+   --> src/executable.rs:166:13
+    |
+166 | --> src/executable.rs:166:13
+    |
+166 |             Some(children)
+    |             ^^^^^--------^
+    |             Some(children)
+    |             ^^^^^--------^
+    |                  |
+    |                  this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/option.rs:578:5                 |
+    |                  this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/option.rs:578:5
+
+
+
+error[E0609]: no field `type_kind` on type `&Self`
+   --> error[E0609]: no field `type_kind` on type `&Self`
+   --> src/executable.rs:167:24
+    |
+42  | trait ExecutableT {
+    | ----------------- src/executable.rs:167:24
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+167 |         } else if self.type_kind == TypeKind::NaiveStruct {
+    |                        ^^^^^^^^^ unknown field
+
+type parameter 'Self' declared here
+...
+167 |         } else if self.type_kind == TypeKind::NaiveStruct {
+    |                        ^^^^^^^^^ unknown field
+
+error[E0609]: no field `ast_node` on type `&Self`
+   error[E0609]: no field `ast_node` on type `&Self`
+   --> src/executable.rs:169:42
+    |
+42  | trait ExecutableT {
+--> src/executable.rs:169:42
+    |
+42  | trait ExecutableT {
+    | -----------------     | ----------------- type parameter 'Self' declared here
+...
+169 |             if let Some(ast_node) = self.ast_node.as_ref() {
+type parameter 'Self' declared here
+...
+169 |             if let Some(ast_node) = self.ast_node.as_ref() {
+    |                                          ^^^^^^^^ unknown field
+
+    |                                          ^^^^^^^^ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:171:61
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+171 |                     let member_name = format!("{}.{}", self.name, member.name);
+    |                                                             ^^^^ unknown field
+
+error[E0609]: no field `name` on type `&Self`
+   --> src/executable.rs:171:61
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+171 |                     let member_name = format!("{}.{}", self.name, member.name);
+    |                                                             ^^^^ unknown field
+
+error[E0599]: no method named `clone_box` found for reference `&Self` in the current scope
+   --> src/executable.rs:186:30
+    |
+186 |                         self.clone_box(),
+    |                              ^^^^^^^^^ method not found in `&Self`
+
+error[E0599]: no method named `clone_box` found for reference `&Self` in the current scope
+   --> src/executable.rs:186:30
+    |
+186 |                         self.clone_box(),
+    |                              ^^^^^^^^^ method not found in `&Self`
+
+error[E0308]: mismatched types
+   --> src/executable.rs:188:29
+    |
+188 | / ...                   Some(IteratorMeta::new(
+189 error[E0308]: mismatched types
+   --> src/executable.rs:188:29
+    |
+188 | / ...                   Some(IteratorMeta::new(
+189 | | ...                       None, // key_type
+190 | | ...                       None, // perf_config
+191 | | ...                       Vec::new(), // items| | ...                       None, // key_type
+190 | | ...                       None, // perf_config
+191 | | ...                       Vec::new(), // items
+192 | | ...                       0, // from
+193
+192 | | ...                       0, // from
+193 | | ...                       0, // to
+194 | | | ...                       0, // to
+194 | | ...                   ))
+    | |________________________^  | ...                   ))
+    | |________________________^ expected `usize`, found `Option<IteratorMeta>`
+    |
+    = note: expected type `usizeexpected `usize`, found `Option<IteratorMeta>`
+    |
+    = note: expected type `usize`
+               found enum `Option<IteratorMeta>`
+
+`
+               found enum `Option<IteratorMeta>`
+
+error[E0308]: mismatched types
+   --> src/executable.rs:196:29
+    |
+196 | ...                   None
+    |                       ^^^^ expected `usize`, found `Option<_>`
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+error[E0308]: mismatched types
+   --> src/executable.rs:196:29
+    |
+196 | ...                   None
+    |                       ^^^^ expected `usize`, found `Option<_>`
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+error[E0061]: this function takes 10 arguments but 6 arguments were supplied
+   --> src/executable.rs:181:34
+    |
+181 |                       let member = Executable::new(
+    |  __________________________________^^^^^^^^^^^^^^^-
+182 | |                         member_name,
+183 | |                         member_type_kind,
+    | |                         ---------------- expected `usize`, found `TypeKind`
+184 | |                         member_value_type,
+...   |
+198 | |
+199 | |                     );
+    | |_____________________- multiple arguments are missing
+    |
+note: associated function defined here
+   --> src/executable.rs:43:12
+    |
+43  |     pub fn new(
+    |            ^^^
+44  |         name: String,
+    |         ------------
+45  | error[E0061]: this function takes 10 arguments but 6 arguments were supplied
+   --> src/executable.rs:181:34
+    |
+181 |                       let member = Executable::new(
+    |  __________________________________^^^^^^^^^^^^^^^-
+182 | |                         member_name,
+183 | |                         member_type_kind,
+    | |                         ---------------- expected `usize`, found `TypeKind`
+184 | |                         member_value_type,
+...   |
+198 | |
+199 | |                     );
+    | |_____________________- multiple arguments are missing
+    |
+note: associated function defined here
+   --> src/executable.rs:43:12
+    |
+43  |     pub fn new(
+    |            ^^^
+44  |         name: String,
+    |         ------------
+45  |         step: usize,
+    |         -----------
+46  |         belongs_to: Option<&Executable>,
+            step: usize,
+    |         -----------
+46  |         belongs_to: Option<&Executable>,
+    |         -------------------------------
+47  |         type_kind: TypeKind,
+|         -------------------------------
+47  |         type_kind: TypeKind,
+    |         -------------------
+48  |         value_type: String,    |         -------------------
+48  |         value_type: String,
+    |         ------------------
+49  | 
+    |         ------------------
+49  |         offset: usize,
+    |         -------------
+50  |        offset: usize,
+    |         -------------
+50  |         relative_slot: String,
+    |         ---------------------
+51  |         ast_node: Option<&'static Node>,
+    |         -------------------------------
+52  |         mapping_key: Option<String>,
+             relative_slot: String,
+    |         ---------------------
+51  |         ast_node: Option<&'static Node>,
+    |         -------------------------------
+52  |         mapping_key: Option<String>,
+    |         ---------------------------
+53  |         iter: Option<IteratorMeta>,
+|         ---------------------------
+53  |         iter: Option<IteratorMeta>,
+    |         --------------------------
+help: provide the arguments
+    |    |         --------------------------
+help: provide the arguments
+    |
+181 ~                     let member = Executable::new(member_name, /* usize */, member_value_type, member_relative_slot, self.clone_box(), if member_type_kind.is_iterish() {
+182 
+181 ~                     let member = Executable::new(member_name, /* usize */, member_value_type, member_relative_slot, self.clone_box(), if member_type_kind.is_iterish() {
+182 +                             Some(IteratorMeta::new(
+183 +                                 None, // key_type
+184 +                                 None, // perf_config
++                             Some(IteratorMeta::new(
+183 +                                 None, // key_type
+184 +                                 None, // perf_config
+185 +                                 Vec::new(), // items
+186 +                                 0, // from
+187 185 +                                 Vec::new(), // items
+186 +                                 0, // from
+187 +                                 0, // to
+188 +                             ))
+189 +                         } else {
++                                 0, // to
+188 +                             ))
+189 +                         } else {
+190 +                             None
+191 ~                         }, /* std::string::String */, /* Option<&'static Node> */, /* Option<std::string::String> */, /* Option<IteratorMeta> */);
+    190 +                             None
+191 ~                         }, /* std::string::String */, /* Option<&'static Node> */, /* Option<std::string::String> */, /* Option<IteratorMeta> */);
+    |
+
+|
+
+error[E0609]: no field `type_kind` on type `&mut Self`
+   --> src/executable.rs:211:20
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+211 |         match self.type_kind {
+    |                    ^^^^^^^^^ unknown field
+
+error[E0609]: no field `type_kind` on type `&mut Self`
+   --> src/executable.rs:211:20
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+211 |         match self.type_kind {
+    |                    ^^^^^^^^^ unknown field
+
+error[E0609]: no field `value` on type `&mut Self`
+   --> src/executable.rs:214:26
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+214 |                     self.value = Some(value.to_string().as_str().to_string());
+error[E0609]: no field `value` on type `&mut Self`
+   --> src/executable.rs:214:26
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+214 |                     self.value = Some(value.to_string().as_str().to_string());
+    |                          ^^^^^ unknown field
+
+    |                          ^^^^^ unknown field
+
+error[E0599]: the method `to_string` exists for reference `&PerfConfigItem`, but its trait bounds were not satisfied
+   --> src/executable.rs:214:45
+    |
+214 |                     self.value = Some(value.to_string().as_str().to_string());
+    error[E0599]: the method `to_string` exists for reference `&PerfConfigItem`, but its trait bounds were not satisfied
+   --> src/executable.rs:214:45
+    |
+214 |                     self.value = Some(value.to_string().as_str().to_string());
+    |                                             ^^^^^^^^^ method cannot be called on `&PerfConfigItem` due to unsatisfied trait bounds
+    |
+   ::: src/perf_config_item.rs:1:1
+    |
+1   | |                                             ^^^^^^^^^ method cannot be called on `&PerfConfigItem` due to unsatisfied trait bounds
+    |
+   ::: src/perf_config_item.rs:1:1
+    |
+1   | pub struct PerfConfigItem {
+    | ------------------------- doesn't satisfy `PerfConfigItem: ToString` or `PerfConfigItem: std::fmt::Display`
+    |
+    = note: the following trait bounds were not satisfied:
+            `PerfConfigItem: std::fmt::Display`
+            which is required by `PerfConfigItem: ToString`
+            `&PerfConfigItem: std::fmt::Display`
+            which is required by `&PerfConfigItem: ToString`
+note: the trait `std::fmt::Display` must be implemented
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/fmt/mod.rs:672:1
+
+pub struct PerfConfigItem {
+    | ------------------------- doesn't satisfy `PerfConfigItem: ToString` or `PerfConfigItem: std::fmt::Display`
+    |
+    = note: the following trait bounds were not satisfied:
+            `PerfConfigItem: std::fmt::Display`
+            which is required by `PerfConfigItem: ToString`
+            `&PerfConfigItem: std::fmt::Display`
+            which is required by `&PerfConfigItem: ToString`
+note: the trait `std::fmt::Display` must be implemented
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/fmt/mod.rs:672:1
+
+error[E0609]: no field `value` on type `&mut Self`
+   --> src/executable.rs:216:26
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...error[E0609]: no field `value` on type `&mut Self`
+   --> src/executable.rs:216:26
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+216 |                     self.value = None;
+    |                          ^^^^^ 
+216 |                     self.value = None;
+    |                          ^^^^^ unknown field
+
+unknown field
+
+error[E0609]: no field `iter` on type `&mut Self`
+   --> src/executable.rs:222:51
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+222 |                     if let Some(iter) = &mut self.iter {
+    |                                                   ^^^^ unknown field
+
+error[E0609]: no field `iter` on type `&mut Self`
+   --> src/executable.rs:222:51
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+222 |                     if let Some(iter) = &mut self.iter {
+    |                                                   ^^^^ unknown field
+
+error[E0616]: field `to` of struct `PerfConfigItem` is private
+   --> src/executable.rs:223:41
+    |
+223 |                         iter.to = value.to.as_ref().map(|s| s.parse().unwrap_or(0)).unwrap_or(0);
+    |                                         ^^ private field
+
+error[E0616]: field `to` of struct `PerfConfigItem` is private
+   --> src/executable.rs:223:41
+    |
+223 |                         iter.to = value.to.as_ref().map(|s| s.parse().unwrap_or(0)).unwrap_or(0);
+    |                                         ^^ private field
+
+error[E0609]: no field `belongs_to` on type `&mut Self`
+   --> src/executable.rs:235:41
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+235 |         if let Some(belongs_to) = &self.belongs_to {
+    |                                         ^^^^^^^^^^ unknown field
+
+error[E0609]: no field `belongs_to` on type `&mut Self`
+   --> src/executable.rs:235:41
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+235 |         if let Some(belongs_to) = &self.belongs_to {
+    |                                         ^^^^^^^^^^ unknown field
+
+error[E0609]: no field `relative_slot` on type `&mut Self`
+   --> src/executable.rs:238:46
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+238 |                 let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
+    |                                              ^^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `relative_slot` on type `&mut Self`
+   --> src/executable.rs:238:46
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+238 |                 let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
+    |                                              ^^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `absolute_slot` on type `&mut Self`
+   --> src/executable.rs:240:22
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+240 |                 self.absolute_slot = Some(format!("{:X}", combined_slot));
+    |                      ^^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `absolute_slot` on type `&mut Self`
+   --> src/executable.rs:240:22
+    |
+42  | trait ExecutableT {
+    | ----------------- type parameter 'Self' declared here
+...
+240 |                 self.absolute_slot = Some(format!("{:X}", combined_slot));
+    |                      ^^^^^^^^^^^^^ unknown field
+
+error[E0308]: mismatched types
+ --> src/perf_expression_evaluator.rs:4:47
+  |
+4 |     pub fn eval(&self, expression: String) -> usize {
+  |            ----                               ^^^^^ expected `usize`, found `()`
+  |            |
+  |            implicitly returns `()` as its body has no tail or `return` expression
+
+error[E0308]: mismatched types
+ --> src/perf_expression_evaluator.rs:4:47
+  |
+4 |     pub fn eval(&self, expression: String) -> usize {
+  |            ----                               ^^^^^ expected `usize`, found `()`
+  |            |
+  |            implicitly returns `()` as its body has no tail or `return` expression
+
+Some errors have detailed explanations: E0061, E0071, E0106, E0252, E0255, E0277, E0308, E0428, E0449...
+For more information about an error, try `rustc --explain E0061`.
+Some errors have detailed explanations: E0061, E0071, E0106, E0252, E0255, E0277, E0308, E0428, E0449...
+For more information about an error, try `rustc --explain E0061`.
+warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 77 warnings
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 113 previous errors; 77 warnings emitted
+warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 77 warnings
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 113 previous errors; 77 warnings emitted

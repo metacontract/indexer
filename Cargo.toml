@@ -1,9 +1,15 @@
-[package]
-name = "indexer"
+[workspace]
+name = "mc-indexer"
 version = "0.1.0"
-edition = "2021"
+edition = 2024
+
+[workspace.package]
+name = "mc-indexer"
+version = "0.1.0"
+edition = 2024
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde_json = "1.0"
+
+

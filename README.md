@@ -50,6 +50,8 @@ classDiagram
         +iter: Option<IteratorMeta>
         +executor: Executor
         +is_iterish: bool
+        +mapping_key: String
+        +new(name: String, type_kind: TypeKind, value_type: String, relative_slot: String, belongs_to: Executable, mapping_key: String, iter: Option<IteratorMeta>) -> Self
         +calculat_abs_slot(): String
         +get_edfs():String
         +get_type_and_name() -> String
@@ -58,13 +60,6 @@ classDiagram
         +get_children(ast_node:String): Option<Vec<Executable>>
     }
 
-    class IteratorItem {
-        +mapping_key: String
-        +new(name: String, type_kind: TypeKind, value_type: String, relative_slot: String, belongs_to: Executable, mapping_key: String, iter: Option<IteratorMeta>) -> Self
-    }
-    class Member {
-        +new(name: String, type_kind: TypeKind, value_type: String, relative_slot: String, belongs_to: Executable, iter: Option<IteratorMeta>) -> Self
-    }
     class IteratorMeta {
         +key_type: String
         +from: Option<usize>
@@ -118,19 +113,15 @@ classDiagram
     Main --> Extractor
     Extractor --> Compiler
     Extractor --> Registry
-    Extractor --> Member
-    Member <--> IteratorItem
     Registry <-- PerfConfigItem
-    Member<--IteratorMeta
+    Executable<--IteratorMeta
     Executor-->PerfExpressionEvaluator
     Executable-->TypeKind
     Executor --> Registry
-    Executor --> Member
-    Executor --> IteratorItem
-    Member <|-- Executable
-    IteratorItem <|-- Executable
+    Executor --> Executable
     Registry --> ASTNode
     ASTNode --> Node
+
 
 
 ```
@@ -141,7 +132,7 @@ sequenceDiagram
     participant Extractor
     participant Compiler
     participant Registry
-    participant Executable as Executable (Member/IteratorItem)
+    participant Executable
     participant Executor
 
     Main->>Extractor: new()
