@@ -23,7 +23,6 @@ use eth_call::EthCall;
 use iterator_meta::IteratorMeta;
 use perf_expression_evaluator::PerfExpressionEvaluator;
 use ast_node::ASTNode;
-use ast_node::Node;
 
 use std::collections::HashMap;
 use std::process::Command;

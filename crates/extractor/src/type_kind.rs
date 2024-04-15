@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum TypeKind {
     Mapping,
     Array,

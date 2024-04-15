@@ -1,332 +1,542 @@
    Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
-error[E0432]: unresolved import `super::ast_node::Node`
-  --> src/extractor.rs:12:5
+error[E0596]: cannot borrow `compiler` as mutable, as it is not declared as mutable
+  --> src/extractor.rs:28:35
    |
-12 | use super::ast_node::Node;
-   |     ^^^^^^^^^^^^^^^^^^^^^ no `Node` in `ast_node`
+28 |         let storage_layout_blob = compiler.prepare_storage_layout().unwrap();
+   |                                   ^^^^^^^^ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+27 |         let mut compiler = Compiler::new("solc".to_string());
+   |             +++
 
-error[E0432]: unresolved import `super::ast_node::Node`
-  --> src/executor.rs:12:5
+error[E0596]: cannot borrow `registry` as mutable, as it is not declared as mutable
+  --> src/extractor.rs:29:13
    |
-12 | use super::ast_node::Node;
-   |     ^^^^^^^^^^^^^^^^^^^^^ no `Node` in `ast_node`
+29 |         let registry = Registry::new(HashMap::new(), storage_layout_blob);
+   |             ^^^^^^^^ not mutable
+30 |         registry.set_self_to_ast_node(); // mutual ref
+   |         -------- cannot borrow as mutable
+31 |         let executor = Executor::new(&mut registry);
+   |                                      ------------- cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+29 |         let mut registry = Registry::new(HashMap::new(), storage_layout_blob);
+   |             +++
 
-error[E0432]: unresolved import `super::ast_node::Node`
-  --> src/registry.rs:12:5
+error[E0597]: `member` does not live long enough
+  --> src/extractor.rs:72:39
    |
-12 | use super::ast_node::Node;
-   |     ^^^^^^^^^^^^^^^^^^^^^ no `Node` in `ast_node`
+41 |     pub fn init_members_from_compiler(&mut self) {
+   |                                       --------- has type `&mut Extractor<'1>`
+...
+58 |             let member = Executable::new(
+   |                 ------ binding `member` declared here
+...
+72 |             self.initial_members.push(&member);
+   |             --------------------------^^^^^^^-
+   |             |                         |
+   |             |                         borrowed value does not live long enough
+   |             argument requires that `member` is borrowed for `'1`
+73 |             i -= 1;
+74 |         }
+   |         - `member` dropped here while still borrowed
 
-error[E0432]: unresolved import `super::ast_node::Node`
-  --> src/executable.rs:12:5
+error[E0384]: cannot assign twice to immutable variable `i`
+  --> src/extractor.rs:73:13
    |
-12 | use super::ast_node::Node;
-   |     ^^^^^^^^^^^^^^^^^^^^^ no `Node` in `ast_node`
+45 |         let i = 9999999999; // to avoid astId conflict
+   |             -
+   |             |
+   |             first assignment to `i`
+   |             help: consider making this binding mutable: `mut i`
+...
+73 |             i -= 1;
+   |             ^^^^^^ cannot assign twice to immutable variable
 
-error[E0432]: unresolved import `super::ast_node::Node`
-  --> src/iterator_meta.rs:12:5
+error: lifetime may not live long enough
+  --> src/executor.rs:31:9
    |
-12 | use super::ast_node::Node;
-   |     ^^^^^^^^^^^^^^^^^^^^^ no `Node` in `ast_node`
+30 |       pub fn new(registry: &mut Registry) -> Self {
+   |                            -                 ---- return type is Executor<'1>
+   |                            |
+   |                            let's call the lifetime of this reference `'3`
+31 | /         Self {
+32 | |             queue_per_step: Vec::new(),
+33 | |             executed_per_step: Vec::new(),
+34 | |             registry,
+35 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'3`
+   |
+   = note: requirement occurs because of the type `Executor<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executor<'executor>` is invariant over the parameter `'executor`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0432]: unresolved import `ast_node::Node`
-  --> src/main.rs:26:5
+error: lifetime may not live long enough
+  --> src/executor.rs:31:9
    |
-26 | use ast_node::Node;
-   |     ^^^^^^^^^^^^^^ no `Node` in `ast_node`
+30 |       pub fn new(registry: &mut Registry) -> Self {
+   |                  --------                    ---- return type is Executor<'1>
+   |                  |
+   |                  has type `&mut Registry<'2>`
+31 | /         Self {
+32 | |             queue_per_step: Vec::new(),
+33 | |             executed_per_step: Vec::new(),
+34 | |             registry,
+35 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'2`
+   |
+   = note: requirement occurs because of the type `Executor<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executor<'executor>` is invariant over the parameter `'executor`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0412]: cannot find type `Executable` in this scope
-  --> src/ast_node.rs:75:61
+error: lifetime may not live long enough
+  --> src/executor.rs:34:13
    |
-75 |     pub fn fill_iter_unless_empty_index(&self, executable: &Executable) -> bool {
-   |                                                             ^^^^^^^^^^ not found in this scope
+30 |     pub fn new(registry: &mut Registry) -> Self {
+   |                --------                    ---- return type is Executor<'1>
+   |                |
+   |                has type `&mut Registry<'2>`
+...
+34 |             registry,
+   |             ^^^^^^^^ this usage requires that `'1` must outlive `'2`
    |
-help: consider importing this struct through its public re-export
-   |
-1  + use crate::Executable;
-   |
+   = note: requirement occurs because of a mutable reference to `Registry<'_>`
+   = note: mutable references are invariant over their type parameter
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0425]: cannot find value `perf_config_item` in this scope
-  --> src/ast_node.rs:78:31
+error[E0502]: cannot borrow `self.ast_node` as mutable because it is also borrowed as immutable
+  --> src/registry.rs:35:9
    |
-78 |         let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
-   |                               ^^^^^^^^^^^^^^^^ not found in this scope
+35 |         self.ast_node.set_registry(&self);
+   |         ^^^^^^^^^^^^^^------------^-----^
+   |         |             |            |
+   |         |             |            immutable borrow occurs here
+   |         |             immutable borrow later used by call
+   |         mutable borrow occurs here
 
-error[E0425]: cannot find value `perf_config_item` in this scope
-  --> src/ast_node.rs:79:29
+error: lifetime may not live long enough
+  --> src/registry.rs:38:9
    |
-79 |         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
-   |                             ^^^^^^^^^^^^^^^^ not found in this scope
+37 |     pub fn set_executor(&mut self, executor: &mut Executor) -> () {
+   |                         ---------  -------- has type `&mut Executor<'2>`
+   |                         |
+   |                         has type `&mut Registry<'1>`
+38 |         self.executor = Some(executor);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'1` must outlive `'2`
+   |
+   = note: requirement occurs because of a mutable reference to `Executor<'_>`
+   = note: mutable references are invariant over their type parameter
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0433]: failed to resolve: use of undeclared type `PerfExpressionEvaluator`
-  --> src/ast_node.rs:82:31
+error: lifetime may not live long enough
+  --> src/registry.rs:38:9
    |
-82 |             let parsed_from = PerfExpressionEvaluator::eval(from_expr);
-   |                               ^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `PerfExpressionEvaluator`
-   |
-help: consider importing this struct through its public re-export
-   |
-1  + use crate::PerfExpressionEvaluator;
-   |
+37 |     pub fn set_executor(&mut self, executor: &mut Executor) -> () {
+   |                         ---------            - let's call the lifetime of this reference `'3`
+   |                         |
+   |                         has type `&mut Registry<'1>`
+38 |         self.executor = Some(executor);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'3` must outlive `'1`
 
-error[E0425]: cannot find value `iter` in this scope
-  --> src/ast_node.rs:83:13
+error: lifetime may not live long enough
+  --> src/registry.rs:38:9
    |
-83 |             iter.set_from(parsed_from);
-   |             ^^^^ not found in this scope
+37 |     pub fn set_executor(&mut self, executor: &mut Executor) -> () {
+   |                         ---------  -------- has type `&mut Executor<'2>`
+   |                         |
+   |                         has type `&mut Registry<'1>`
+38 |         self.executor = Some(executor);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'2` must outlive `'1`
+   |
+   = note: requirement occurs because of a mutable reference to `Executor<'_>`
+   = note: mutable references are invariant over their type parameter
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0433]: failed to resolve: use of undeclared type `PerfExpressionEvaluator`
-  --> src/ast_node.rs:87:29
+error: lifetime may not live long enough
+  --> src/registry.rs:44:9
    |
-87 |             let parsed_to = PerfExpressionEvaluator::eval(to_expr);
-   |                             ^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `PerfExpressionEvaluator`
+43 |     pub fn set_output(&mut self, id: usize, e: &Executable) {
+   |                       ---------             - has type `&Executable<'2>`
+   |                       |
+   |                       has type `&mut Registry<'1>`
+44 |         self.output_flatten.insert(id, e);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'1` must outlive `'2`
    |
-help: consider importing this struct through its public re-export
-   |
-1  + use crate::PerfExpressionEvaluator;
-   |
+   = note: requirement occurs because of a mutable reference to `HashMap<usize, &Executable<'_>>`
+   = note: mutable references are invariant over their type parameter
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0425]: cannot find value `parsed_to` in this scope
-  --> src/ast_node.rs:92:12
+error: lifetime may not live long enough
+  --> src/registry.rs:44:9
    |
-92 |         if parsed_to == 0 {
-   |            ^^^^^^^^^
+43 |     pub fn set_output(&mut self, id: usize, e: &Executable) {
+   |                       ---------                - let's call the lifetime of this reference `'3`
+   |                       |
+   |                       has type `&mut Registry<'1>`
+44 |         self.output_flatten.insert(id, e);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'3` must outlive `'1`
+
+error: lifetime may not live long enough
+  --> src/registry.rs:44:9
    |
-help: the binding `parsed_to` is available in a different scope in the same function
-  --> src/ast_node.rs:87:17
+43 |     pub fn set_output(&mut self, id: usize, e: &Executable) {
+   |                       ---------             - has type `&Executable<'2>`
+   |                       |
+   |                       has type `&mut Registry<'1>`
+44 |         self.output_flatten.insert(id, e);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'2` must outlive `'1`
    |
-87 |             let parsed_to = PerfExpressionEvaluator::eval(to_expr);
-   |                 ^^^^^^^^^
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0412]: cannot find type `Executable` in this scope
-   --> src/ast_node.rs:100:39
-    |
-100 |     pub fn labels(&self, executable: &Executable) -> Vec<String> {
-    |                                       ^^^^^^^^^^ not found in this scope
-    |
-help: consider importing this struct through its public re-export
-    |
-1   + use crate::Executable;
-    |
-
-error[E0425]: cannot find value `iter` in this scope
-   --> src/ast_node.rs:101:40
-    |
-101 |         if (executable.is_iterish() && iter.to? > 0) {
-    |                                        ^^^^ not found in this scope
-
-error[E0412]: cannot find type `Executable` in this scope
-   --> src/ast_node.rs:121:41
-    |
-121 |     pub fn children(&self, executable: &Executable) -> Vec<Executable> {
-    |                                         ^^^^^^^^^^ not found in this scope
-    |
-help: consider importing this struct through its public re-export
-    |
-1   + use crate::Executable;
-    |
-
-error[E0412]: cannot find type `Executable` in this scope
-   --> src/ast_node.rs:121:60
-    |
-121 |     pub fn children(&self, executable: &Executable) -> Vec<Executable> {
-    |                                                            ^^^^^^^^^^ not found in this scope
-    |
-help: consider importing this struct through its public re-export
-    |
-1   + use crate::Executable;
-    |
-
-error[E0433]: failed to resolve: use of undeclared type `Executable`
-   --> src/ast_node.rs:126:34
-    |
-126 |             let new_executable = Executable::new(
-    |                                  ^^^^^^^^^^ use of undeclared type `Executable`
-    |
-help: consider importing this struct through its public re-export
-    |
-1   + use crate::Executable;
-    |
-
-error[E0425]: cannot find value `executed` in this scope
-   --> src/ast_node.rs:128:17
-    |
-128 |                 executed.step + 1, // step of the current node
-    |                 ^^^^^^^^ not found in this scope
-
-error[E0425]: cannot find value `executed` in this scope
-   --> src/ast_node.rs:129:23
-    |
-129 |                 Some(&executed), // set the belongs_to to the current executable
-    |                       ^^^^^^^^ not found in this scope
-
-error[E0425]: cannot find value `executed` in this scope
-   --> src/ast_node.rs:134:22
-    |
-134 |                 Some(executed), // the AST node
-    |                      ^^^^^^^^ not found in this scope
-
-error[E0425]: cannot find value `executed` in this scope
-   --> src/ast_node.rs:135:20
-    |
-135 |                 if executed.is_iterish() { // check iter or not
-    |                    ^^^^^^^^ not found in this scope
-
-error[E0422]: cannot find struct, variant or union type `IteratorMeta` in this scope
-   --> src/ast_node.rs:141:26
-    |
-141 |                     Some(IteratorMeta {
-    |                          ^^^^^^^^^^^^ not found in this scope
-    |
-help: consider importing this struct through its public re-export
-    |
-1   + use crate::IteratorMeta;
-    |
-
-warning: unnecessary parentheses around `if` condition
-  --> src/executor.rs:63:23
+error: lifetime may not live long enough
+  --> src/registry.rs:48:9
    |
-63 |             } else if (executed.is_iterish()) {
-   |                       ^                     ^
+47 |     pub fn get_output(&self, id: usize) -> Option<&&Executable> {
+   |                       -----
+   |                       |
+   |                       let's call the lifetime of this reference `'1`
+   |                       has type `&Registry<'2>`
+48 |         self.output_flatten.get(&id)
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method was supposed to return data with lifetime `'2` but it is returning data with lifetime `'1`
    |
-   = note: `#[warn(unused_parens)]` on by default
-help: remove these parentheses
-   |
-63 -             } else if (executed.is_iterish()) {
-63 +             } else if executed.is_iterish() {
-   |
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-warning: unnecessary parentheses around `if` condition
-  --> src/executor.rs:64:20
+error: lifetime may not live long enough
+  --> src/executable.rs:53:9
    |
-64 |                   if (
-   |  ____________________^
-65 | |                     self.registry.ast_node.fill_iter_unless_empty_index(&executed)
-   | |____________________^
-66 |                       ||
-67 |                       !executed.is_iterish()
-   |  ___________________________________________^
-68 | |                 ) {
-   | |_________________^
-   |
-help: remove these parentheses
-   |
-64 ~                 if self.registry.ast_node.fill_iter_unless_empty_index(&executed)
-65 |                     ||
-66 ~                     !executed.is_iterish() {
-   |
-
-warning: unnecessary parentheses around `if` condition
-   --> src/ast_node.rs:101:12
-    |
-101 |         if (executable.is_iterish() && iter.to? > 0) {
-    |            ^                                       ^
-    |
-help: remove these parentheses
-    |
-101 -         if (executable.is_iterish() && iter.to? > 0) {
-101 +         if executable.is_iterish() && iter.to? > 0 {
-    |
-
-error[E0616]: field `ast_node` of struct `Registry` is private
-  --> src/executor.rs:65:35
-   |
-65 |                     self.registry.ast_node.fill_iter_unless_empty_index(&executed)
-   |                                   ^^^^^^^^ private field
-
-error[E0616]: field `ast_node` of struct `Registry` is private
-  --> src/executor.rs:69:35
-   |
-69 |                     self.registry.ast_node.enqueue_children(&executed);
-   |                                   ^^^^^^^^ private field
-
-error[E0277]: `()` is not a future
-  --> src/executor.rs:36:120
-   |
-36 |       pub async fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize) -> impl Future<Output = ()> {
-   |  ________________________________________________________________________________________________________________________^
-37 | |         // Get values by slots from EthCall
-38 | |         let slots: HashMap<String, &str> = self.queue_per_step[step].iter().map(|executable| (executable.get_edfs(), executable.get_abs_s...
-39 | |         let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789...
+44 |           belongs_to: Option<&Executable>,
+   |                              - let's call the lifetime of this reference `'3`
+...
+52 |       ) -> Self {
+   |            ---- return type is Executable<'1>
+53 | /         Self {
+54 | |             id,
+55 | |             name,
+56 | |             fulltype,
 ...  |
-77 | |         self.flush_executed(step);
-78 | |     }
-   | |_____^ `()` is not a future
+67 | |             registry
+68 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'3`
    |
-   = help: the trait `Future` is not implemented for `()`
-   = note: () must be a future or must implement `IntoFuture` to be awaited
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0277]: the `?` operator can only be used in an async function that returns `Result` or `Option` (or another type that implements `FromResidual`)
-  --> src/executor.rs:50:46
+error: lifetime may not live long enough
+  --> src/executable.rs:53:9
    |
-36 |       pub async fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize) -> impl Future<Output = ()> {
-   |  ________________________________________________________________________________________________________________________-
-37 | |         // Get values by slots from EthCall
-38 | |         let slots: HashMap<String, &str> = self.queue_per_step[step].iter().map(|executable| (executable.get_edfs(), executable.get_abs_s...
-39 | |         let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789...
+44 |           belongs_to: Option<&Executable>,
+   |           ---------- has type `Option<&Executable<'2>>`
+...
+52 |       ) -> Self {
+   |            ---- return type is Executable<'1>
+53 | /         Self {
+54 | |             id,
+55 | |             name,
+56 | |             fulltype,
 ...  |
-50 | |             if let Some(value) = values.await?.get(executed.get_edfs().as_str()) {
-   | |                                              ^ cannot use the `?` operator in an async function that returns `()`
+67 | |             registry
+68 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'2`
+   |
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
+
+error: lifetime may not live long enough
+  --> src/executable.rs:53:9
+   |
+51 |           registry: &Registry
+   |                     - let's call the lifetime of this reference `'4`
+52 |       ) -> Self {
+   |            ---- return type is Executable<'1>
+53 | /         Self {
+54 | |             id,
+55 | |             name,
+56 | |             fulltype,
 ...  |
-77 | |         self.flush_executed(step);
-78 | |     }
-   | |_____- this function should return `Result` or `Option` to accept `?`
+67 | |             registry
+68 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'4`
    |
-   = help: the trait `FromResidual<Result<Infallible, Box<dyn std::error::Error>>>` is not implemented for `()`
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0277]: `()` is not a future
-  --> src/executor.rs:36:95
+error: lifetime may not live long enough
+  --> src/executable.rs:53:9
    |
-36 |     pub async fn bulk_exec_and_enqueue_and_set_primitive_to_output(&mut self, step: usize) -> impl Future<Output = ()> {
-   |                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^ `()` is not a future
+51 |           registry: &Registry
+   |           -------- has type `&Registry<'5>`
+52 |       ) -> Self {
+   |            ---- return type is Executable<'1>
+53 | /         Self {
+54 | |             id,
+55 | |             name,
+56 | |             fulltype,
+...  |
+67 | |             registry
+68 | |         }
+   | |_________^ associated function was supposed to return data with lifetime `'1` but it is returning data with lifetime `'5`
    |
-   = help: the trait `Future` is not implemented for `()`
-   = note: () must be a future or must implement `IntoFuture` to be awaited
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
 
-error[E0308]: mismatched types
-  --> src/eth_call.rs:61:41
+error: lifetime may not live long enough
+  --> src/executable.rs:58:13
    |
-61 |             values.insert(edfs.clone(), &value.to_string());
-   |                    ------               ^^^^^^^^^^^^^^^^^^ expected `String`, found `&String`
+44 |         belongs_to: Option<&Executable>,
+   |         ---------- has type `Option<&Executable<'2>>`
+...
+52 |     ) -> Self {
+   |          ---- return type is Executable<'1>
+...
+58 |             belongs_to,
+   |             ^^^^^^^^^^ this usage requires that `'1` must outlive `'2`
+   |
+   = note: requirement occurs because of the type `Executable<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Executable<'executable_lifetime>` is invariant over the parameter `'executable_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
+
+warning: unused variable: `i`
+  --> src/executable.rs:86:44
+   |
+86 |             let value_types = (0..to).map(|i| {
+   |                                            ^ help: if this is intentional, prefix it with an underscore: `_i`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+error[E0596]: cannot borrow `self.registry.ast_node` as mutable, as it is behind a `&` reference
+  --> src/executable.rs:80:28
+   |
+80 |         let current_node = self.registry.ast_node.visit(&self.fulltype).unwrap();
+   |                            ^^^^^^^^^^^^^^^^^^^^^^ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+34 |     pub registry: &'executable_lifetime mut Registry<'executable_lifetime>,
+   |                                         +++
+
+error[E0507]: cannot move out of `self.iter` which is behind a shared reference
+  --> src/executable.rs:81:20
+   |
+81 |         let iter = self.iter.unwrap();
+   |                    ^^^^^^^^^ -------- `self.iter` moved due to this method call
    |                    |
-   |                    arguments to this method are incorrect
+   |                    help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+   |                    move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
    |
-help: the return type of this call is `&std::string::String` due to the type of the argument passed
-  --> src/eth_call.rs:61:13
+note: `Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `self.iter`
+  --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/option.rs:928:25
+help: you can `clone` the value and consume it, but this might not be your desired behavior
    |
-61 |             values.insert(edfs.clone(), &value.to_string());
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^------------------^
-   |                                         |
-   |                                         this argument influences the return type of `insert`
-note: method defined here
-  --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/std/src/collections/hash/map.rs:1104:12
-help: consider removing the borrow
-   |
-61 -             values.insert(edfs.clone(), &value.to_string());
-61 +             values.insert(edfs.clone(), value.to_string());
-   |
+81 |         let iter = <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap();
+   |                    ++++++++++++++++++++++++++++++++++++++++         +
 
-error[E0308]: mismatched types
-  --> src/eth_call.rs:65:12
-   |
-65 |         Ok(values)
-   |         -- ^^^^^^ expected `HashMap<String, &str>`, found `HashMap<String, String>`
-   |         |
-   |         arguments to this enum variant are incorrect
-   |
-   = note: expected struct `HashMap<_, &str>`
-              found struct `HashMap<_, std::string::String>`
-help: the type constructed contains `HashMap<std::string::String, std::string::String>` due to the type of the argument passed
-  --> src/eth_call.rs:65:9
-   |
-65 |         Ok(values)
-   |         ^^^------^
-   |            |
-   |            this argument influences the type of `Ok`
-note: tuple variant defined here
-  --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/result.rs:506:5
+error[E0596]: cannot borrow `self.registry.ast_node` as mutable, as it is behind a `&` reference
+   --> src/executable.rs:105:32
+    |
+105 |             let current_node = self.registry.ast_node.visit(&labels[i]).unwrap();
+    |                                ^^^^^^^^^^^^^^^^^^^^^^ cannot borrow as mutable
+    |
+help: consider changing this to be mutable
+    |
+34  |     pub registry: &'executable_lifetime mut Registry<'executable_lifetime>,
+    |                                         +++
 
-Some errors have detailed explanations: E0277, E0308, E0412, E0422, E0425, E0432, E0433, E0616.
-For more information about an error, try `rustc --explain E0277`.
+error[E0382]: borrow of moved value: `fulltype`
+   --> src/executable.rs:114:36
+    |
+106 |             let fulltype = current_node.get("type").unwrap().to_string();
+    |                 -------- move occurs because `fulltype` has type `std::string::String`, which does not implement the `Copy` trait
+...
+111 |                 fulltype, // fulltype
+    |                 -------- value moved here
+...
+114 |                 ASTNode::type_kind(&fulltype), // type kind of the current node
+    |                                    ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in method `new` to borrow instead if owning the value isn't necessary
+   --> src/executable.rs:42:19
+    |
+39  |     pub fn new(
+    |            --- in this method
+...
+42  |         fulltype: String,
+    |                   ^^^^^^ this parameter takes ownership of the value
+help: consider cloning the value if the performance cost is acceptable
+    |
+111 |                 fulltype.clone(), // fulltype
+    |                         ++++++++
+
+error[E0507]: cannot move out of `self.registry.executor` which is behind a shared reference
+   --> src/executable.rs:140:9
+    |
+140 |         self.registry.executor.unwrap().queue_per_step.insert(self.step, vec![self]);
+    |         ^^^^^^^^^^^^^^^^^^^^^^ -------- `self.registry.executor` moved due to this method call
+    |         |
+    |         help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+    |         move occurs because `self.registry.executor` has type `Option<&mut Executor<'_>>`, which does not implement the `Copy` trait
+    |
+note: `Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `self.registry.executor`
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/option.rs:928:25
+help: you could `clone` the value and consume it, if the `&mut Executor<'_>: Clone` trait bound could be satisfied
+    |
+140 |         <Option<&mut Executor<'_>> as Clone>::clone(&self.registry.executor).unwrap().queue_per_step.insert(self.step, vec![self]);
+    |         +++++++++++++++++++++++++++++++++++++++++++++                      +
+
+error: lifetime may not live long enough
+   --> src/executable.rs:140:74
+    |
+139 |     pub fn enqueue_execution(&self) {
+    |                              -----
+    |                              |
+    |                              let's call the lifetime of this reference `'1`
+    |                              has type `&Executable<'2>`
+140 |         self.registry.executor.unwrap().queue_per_step.insert(self.step, vec![self]);
+    |                                                                          ^^^^^^^^^^ argument requires that `'1` must outlive `'2`
+    |
+    = note: this error originates in the macro `vec` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0507]: cannot move out of `self.iter` which is behind a shared reference
+   --> src/executable.rs:161:9
+    |
+161 |         self.iter.unwrap().set_from(parsed_from);
+    |         ^^^^^^^^^ -------- `self.iter` moved due to this method call
+    |         |
+    |         help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+    |         move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
+    |
+note: `Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `self.iter`
+   --> /rustc/7cf61ebde7b22796c69757901dd346d0fe70bd97/library/core/src/option.rs:928:25
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+161 |         <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap().set_from(parsed_from);
+    |         ++++++++++++++++++++++++++++++++++++++++         +
+
+error[E0507]: cannot move out of `self.iter` which is behind a shared reference
+   --> src/executable.rs:168:9
+    |
+168 |         self.iter.unwrap().set_to(parsed_to);
+    |         ^^^^^^^^^ -------- `self.iter` moved due to this method call
+    |         |
+    |         help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+    |         move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
+    |
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+168 |         <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap().set_to(parsed_to);
+    |         ++++++++++++++++++++++++++++++++++++++++         +
+
+error[E0596]: cannot borrow `*self` as mutable, as it is behind a `&` reference
+   --> src/executable.rs:171:13
+    |
+171 |             self.increment_step();
+    |             ^^^^ `self` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+    |
+help: consider changing this to be a mutable reference
+    |
+149 |     pub fn fill_iter_unless_empty_index(&mut self) -> bool {
+    |                                         ~~~~~~~~~
+
+error[E0507]: cannot move out of `belongs_to.absolute_slot` as enum variant `Some` which is behind a shared reference
+   --> src/executable.rs:203:37
+    |
+203 |             if let Some(abs_slot) = belongs_to.absolute_slot {
+    |                         --------    ^^^^^^^^^^^^^^^^^^^^^^^^
+    |                         |
+    |                         data moved here
+    |                         move occurs because `abs_slot` has type `std::string::String`, which does not implement the `Copy` trait
+    |
+help: consider borrowing here
+    |
+203 |             if let Some(abs_slot) = &belongs_to.absolute_slot {
+    |                                     +
+
+warning: variable does not need to be mutable
+  --> src/eth_call.rs:74:13
+   |
+74 | ...   let mut name_to_id: HashMap<String, i32> = id_to_network.as_object().unwrap().iter().map(|(k, v)| (v.as_str().unwrap().to_string(),...
+   |           ----^^^^^^^^^^
+   |           |
+   |           help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `expression`
+ --> src/perf_expression_evaluator.rs:4:17
+  |
+4 |     pub fn eval(expression: String) -> usize {
+  |                 ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_expression`
+
+error[E0382]: borrow of moved value: `blob`
+  --> src/ast_node.rs:87:20
+   |
+82 |     pub fn new(blob:Value) -> Self {
+   |                ---- move occurs because `blob` has type `Value`, which does not implement the `Copy` trait
+...
+86 |             blob,
+   |             ---- value moved here
+87 |             types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"],
+   |                    ^^^^ value borrowed here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+86 |             blob: blob.clone(),
+   |                 ++++++++++++++
+
+error[E0507]: cannot move out of index of `Value`
+  --> src/ast_node.rs:87:20
+   |
+87 |             types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"],
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ move occurs because value has type `Value`, which does not implement the `Copy` trait
+
+error: lifetime may not live long enough
+  --> src/ast_node.rs:98:9
+   |
+97 |     pub fn set_registry(&mut self, registry: &Registry) -> () {
+   |                         ---------  -------- has type `&Registry<'2>`
+   |                         |
+   |                         has type `&mut ASTNode<'1>`
+98 |         self.registry = Some(registry);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'1` must outlive `'2`
+   |
+   = note: requirement occurs because of the type `Registry<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Registry<'registry_lifetime>` is invariant over the parameter `'registry_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
+
+error: lifetime may not live long enough
+  --> src/ast_node.rs:98:9
+   |
+97 |     pub fn set_registry(&mut self, registry: &Registry) -> () {
+   |                         ---------            - let's call the lifetime of this reference `'3`
+   |                         |
+   |                         has type `&mut ASTNode<'1>`
+98 |         self.registry = Some(registry);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'3` must outlive `'1`
+
+error: lifetime may not live long enough
+  --> src/ast_node.rs:98:9
+   |
+97 |     pub fn set_registry(&mut self, registry: &Registry) -> () {
+   |                         ---------  -------- has type `&Registry<'2>`
+   |                         |
+   |                         has type `&mut ASTNode<'1>`
+98 |         self.registry = Some(registry);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment requires that `'2` must outlive `'1`
+   |
+   = note: requirement occurs because of the type `Registry<'_>`, which makes the generic argument `'_` invariant
+   = note: the struct `Registry<'registry_lifetime>` is invariant over the parameter `'registry_lifetime`
+   = help: see <https://doc.rust-lang.org/nomicon/subtyping.html> for more information about variance
+
+Some errors have detailed explanations: E0382, E0384, E0502, E0507, E0596, E0597.
+For more information about an error, try `rustc --explain E0382`.
 warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 3 warnings
-error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 30 previous errors; 3 warnings emitted
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 35 previous errors; 3 warnings emitted

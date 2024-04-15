@@ -9,7 +9,6 @@ use super::eth_call::EthCall;
 use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
-use super::ast_node::Node;
 
 
 use std::collections::HashMap;
@@ -19,200 +18,176 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct Executable<'executable_lifetime> {
-    name: String,
-    step: usize,
-    belongs_to: Option<&'executable_lifetime Executable<'executable_lifetime>>,
-    type_kind: TypeKind,
-    value_type: String,
+    pub id: usize,
+    pub name: String,
+    pub fulltype: String,
+    pub step: usize,
+    pub belongs_to: Option<&'executable_lifetime Executable<'executable_lifetime>>,
+    pub type_kind: TypeKind,
+    pub value_type: String,
     offset: usize,
     relative_slot: String,
-    absolute_slot: Option<String>,
-    value: Option<String>,
-    children: Option<Vec<&'executable_lifetime Executable<'executable_lifetime>>>,
-    ast_node: Option<&'static Node>,
+    pub absolute_slot: Option<String>,
+    pub value: Option<String>,
     mapping_key: Option<String>,
-    iter: Option<IteratorMeta<'executable_lifetime>>,
+    pub iter: Option<IteratorMeta>,
+    pub registry: &'executable_lifetime Registry<'executable_lifetime>,
 }
 
 
 impl Executable<'_> {
     pub fn new(
+        id: usize,
         name: String,
+        fulltype: String,
         step: usize,
         belongs_to: Option<&Executable>,
         type_kind: TypeKind,
         value_type: String,
         offset: usize,
         relative_slot: String,
-        ast_node: Option<&'static Node>,
         mapping_key: Option<String>,
         iter: Option<IteratorMeta>,
+        registry: &Registry
     ) -> Self {
         Self {
+            id,
             name,
+            fulltype,
             step,
-            belongs_to: Some(belongs_to),
+            belongs_to,
             type_kind,
             value_type,
-            offset: offset,
+            offset,
             relative_slot,
-            None,
-            None,
-            None,
-            ast_node,
+            absolute_slot: None, // absolute_slot
+            value: None, // value
             mapping_key,
             iter,
+            registry
         }
     }
 
     pub fn is_iterish(&self) -> bool {
-        self.type_kind.is_iterish();
-    }
-
-
-    pub fn get_edfs(&self) -> String {
-    }
-
-    pub fn get_type_and_name(&self) -> String {
-        // Implement the logic to get the type and name for a Member
-        // ...
-    }
-
-    pub fn get_type_kind(&self) -> TypeKind {
-        self.type_kind.clone()
-    }
-
-    pub fn get_iter(&self) -> Option<&IteratorMeta> {
-        self.iter.as_ref()
-    }
-
-    pub fn get_iter_mut(&mut self) -> Option<&mut IteratorMeta> {
-        self.iter.as_mut()
-    }
-
-    pub fn get_abs_slot(&self) -> Option<String> {
-        self.absolute_slot.clone()
-    }
-
-    pub fn get_value(&self) -> Option<String> {
-        self.value.clone()
+        self.type_kind.is_iterish()
     }
 
     pub fn increment_step(&mut self) {
         self.step += 1;
     }
 
-    pub fn get_belongs_to(&self) -> Option<&Executable> {
-        self.belongs_to.as_ref()
+    pub fn labels(&self) -> Vec<String> {
+        let current_node = self.registry.ast_node.visit(&self.fulltype).unwrap();
+        let iter = self.iter.unwrap();
+        let to = iter.to.unwrap();
+
+        if self.is_iterish() && to > 0 {
+            // This executable is iterable member
+            let value_types = (0..to).map(|i| {
+                current_node.get("type").unwrap().to_string()
+            }).collect();
+            value_types
+        } else {
+            // Check if the type is a struct
+            if self.type_kind == TypeKind::NaiveStruct {
+                // Return all labels (type names) of the members
+                current_node.get("members").unwrap().as_array().unwrap().iter().map(|member| member.as_object().unwrap().get("label").unwrap().as_str().unwrap().to_string()).collect()
+            } else {
+                // Primitive type, throw error
+                panic!("Primitive type, cannot list labels");
+            }
+        }
+    }
+    pub fn children(&self) -> Vec<Executable> {
+        let mut children = Vec::new();
+        let labels = self.labels();
+        for i in 0..labels.len() {
+            let current_node = self.registry.ast_node.visit(&labels[i]).unwrap();
+            let fulltype = current_node.get("type").unwrap().to_string();
+            let parsed_type = ASTNode::parse_type_str(&fulltype);
+            let new_executable = Executable::new(
+                current_node.get("astId").unwrap().as_u64().unwrap() as usize, // astId
+                current_node.get("label").unwrap().to_string(), // label of the current node
+                fulltype, // fulltype
+                self.step + 1, // step of the current node
+                Some(&self), // set the belongs_to to the current executable
+                ASTNode::type_kind(&fulltype), // type kind of the current node
+                parsed_type.value_type, // type of the current node
+                current_node.get("offset").unwrap().as_u64().unwrap() as usize, // offset of the current node
+                current_node.get("slot").unwrap().to_string(), // slot of the current node
+                if self.is_iterish() { // check iter or not
+                    Some(i.to_string()) // mapping key
+                } else {
+                    None // depends on is_iterish
+                },
+                if ASTNode::type_kind(&fulltype).is_iterish() {
+                    Some(IteratorMeta {
+                        key_type: parsed_type.key_type,
+                        from: None,
+                        to: None,
+                    })
+                } else {
+                    None
+                },
+                self.registry
+            );
+            children.push(new_executable);
+        }
+        children
     }
 
     pub fn enqueue_execution(&self) {
-        self.registry.queue_per_step.insert(self.step, self);
+        self.registry.executor.unwrap().queue_per_step.insert(self.step, vec![self]);
     }
-
-    pub fn get_children(&self) -> Option<Vec<&Executable>> {
-        if self.is_iterish() && self.iter.as_ref().map(|i| i.to).is_some() {
-            let mut children = Vec::new();
-            if let Some(iter) = &self.iter {
-                for i in iter.from..iter.to.unwrap() {
-                    // Find the corresponding struct and its members in the registry.ast_node
-                    let ast_node = self.registry.ast_node.find_struct_by_name(format!("{}.{}", self.name, i));
-                    if let Some(ast_node) = ast_node {
-                        for member in ast_node.members.iter() {
-                            let member_name = format!("{}.{}", self.name, member.name);
-                            let member_type_kind = match member.type_kind.as_str() {
-                                "t_mapping" => TypeKind::Mapping,
-                                "t_array" => TypeKind::Array,
-                                "t_struct" => TypeKind::NaiveStruct,
-                                _ => TypeKind::Primitive,
-                            };
-                            let member_value_type = member.value_type.clone();
-                            let member_relative_slot = member.relative_slot.clone();
-
-                            let item = Executable::new(
-                                member_name,
-                                member_type_kind,
-                                member_value_type,
-                                member_relative_slot,
-                                self.clone_box(),
-                                if member_type_kind.is_iterish() {
-                                    Some(IteratorMeta::new(
-                                        None, // key_type
-                                        None, // perf_config
-                                        Vec::new(), // items
-                                        0, // from
-                                        0, // to
-                                    ))
-                                } else {
-                                    None
-                                },
-                            );
-                            item.increment_step();
-                            item.calculate_abs_slot();
-                            self.children.push(&item);
-                        }
-                    }
-
-                    self.increment_step();
-                    self.calculate_abs_slot();
-                    self.calculate_abs_slot();
-                    children.push(self);
-                }
-            }
-            Some(children)
-        } else if self.type_kind == TypeKind::NaiveStruct {
-            let mut children = Vec::new();
-            if let Some(ast_node) = self.ast_node.as_ref() {
-                for member in ast_node.members.iter() {
-                    let member_name = format!("{}.{}", self.name, member.name);
-                    let member_type_kind = match member.type_kind.as_str() {
-                        "t_mapping" => TypeKind::Mapping,
-                        "t_array" => TypeKind::Array,
-                        "t_struct" => TypeKind::NaiveStruct,
-                        _ => TypeKind::Primitive,
-                    };
-                    let member_value_type = member.value_type.clone();
-                    let member_relative_slot = member.relative_slot.clone();
-
-                    let member = Executable::new(
-                        member_name,
-                        member_type_kind,
-                        member_value_type,
-                        member_relative_slot,
-                        self.clone_box(),
-                        if member_type_kind.is_iterish() {
-                            Some(IteratorMeta::new(
-                                None, // key_type
-                                None, // perf_config
-                                Vec::new(), // items
-                                0, // from
-                                0, // to
-                            ))
-                        } else {
-                            None
-                        },
-
-                    );
-                    member.increment_step();
-                    member.calculate_abs_slot();
-                    children.push(&member);
-                }
-            }
-            Some(children)
-        } else {
-            None
+    pub fn enqueue_children(&self) -> () {
+        let children = self.children();
+        for child in children {
+            child.enqueue_execution();
         }
     }
-    pub fn set_value(&mut self, value: &str) {
+
+    pub fn fill_iter_unless_empty_index(&self) -> bool {
+        // If the iterator's `to` field is empty (likely a mapping)
+        let perf_config_item = self.registry.get_perf_config_item(self.id);
+
+        let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
+        let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
+
+        let parsed_from = if let Some(from_expr) = from_expression {
+            PerfExpressionEvaluator::eval(from_expr)
+        } else {
+            0
+        };
+        self.iter.unwrap().set_from(parsed_from);
+
+        let parsed_to = if let Some(to_expr) = to_expression {
+            PerfExpressionEvaluator::eval(to_expr)
+        } else {
+            0
+        };
+        self.iter.unwrap().set_to(parsed_to);
+
+        if parsed_to == 0 {
+            self.increment_step();
+            self.enqueue_execution();
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn set_value(&mut self, value: String) {
         match self.type_kind {
             TypeKind::Primitive => {
-                self.value = value.map(String::from);
+                self.value = Some(value);
             },
             TypeKind::Array => {
                 // Set the value for an array
-                if let Some(value) = value {
-                    if let Some(iter) = &mut self.iter {
-                        iter.to = value;
+                if let Some(iter) = &mut self.iter {
+                    if let Ok(value_as_u64) = value.parse::<u64>() {
+                        iter.to = Some(value_as_u64 as usize);
+                    } else {
+                        panic!("Unable to parse value as u64: {}", value);
                     }
                 }
             },
@@ -224,8 +199,8 @@ impl Executable<'_> {
 
     pub fn calculate_abs_slot(&mut self) -> () {
         // iter must have belongs_to and so logic can be shorter
-        if let Some(belongs_to) = &self.belongs_to {
-            if let Some(abs_slot) = belongs_to.get_abs_slot() {
+        if let Some(belongs_to) = self.belongs_to {
+            if let Some(abs_slot) = belongs_to.absolute_slot {
                 let abs_slot_num = abs_slot.parse::<usize>().unwrap();
                 let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
                 let combined_slot = abs_slot_num + relative_slot_num;

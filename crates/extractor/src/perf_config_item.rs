@@ -1,5 +1,6 @@
+#[derive(Clone)]
 pub struct PerfConfigItem {
     edfs: String,
-    from: Option<String>,
-    to: Option<String>,
+    pub from: Option<String>,
+    pub to: Option<String>,
 }

@@ -9,44 +9,38 @@ use super::eth_call::EthCall;
 // use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
-use super::ast_node::Node;
 
 
 use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 
-pub struct IteratorMeta<'iterator_meta> {
+#[derive(Clone)]
+pub struct IteratorMeta {
     key_type: Option<String>,
-    perf_config: Option<PerfConfigItem>,
-    items: Vec<Executable<'iterator_meta>>,
-    from: usize,
-    pub to: usize,
+    pub from: Option<usize>,
+    pub to: Option<usize>,
 }
 
-impl IteratorMeta<'_> {
+impl IteratorMeta {
     pub fn new(
         key_type: Option<String>,
-        perf_config: Option<PerfConfigItem>,
-        items: Vec<Executable>,
-        from: usize,
-        to: usize,
+        from: Option<usize>,
+        to: Option<usize>,
     ) -> Self {
         IteratorMeta {
             key_type,
-            perf_config,
-            items,
             from,
             to,
         }
     }
 
 
-    pub fn set_from(&mut self, from: usize) {
-        self.from = from;
+    pub fn set_from(&mut self, from: usize) -> () {
+        self.from = Some(from);
     }
 
-    pub fn set_to(&mut self, to: usize) {
-        self.to = to;
+    pub fn set_to(&mut self, to: usize) -> () {
+        self.to = Some(to);
     }
 }
