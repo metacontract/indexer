@@ -20,7 +20,7 @@ pub struct Extractor<'extractor_lifetime> {
     compiler: Compiler,
     registry: Registry<'extractor_lifetime>,
     initial_members: Vec<&'extractor_lifetime Executable<'extractor_lifetime>>,
-    executor: Executor,
+    executor: Executor<'extractor_lifetime>,
 }
 
 impl Extractor<'_> {
@@ -69,17 +69,17 @@ impl Extractor<'_> {
         }
     }
 
-    pub fn listen(&mut self) {
+    pub async fn listen(&mut self) {
         // Listen for events and process them
         // ...
 
         self.scan_contract();
     }
 
-    pub fn scan_contract(&mut self) {
+    pub async fn scan_contract(&mut self) {
         let mut step = 0;
         loop {
-            self.executor.bulk_exec_and_enqueue_and_set_primitive_to_output(step);
+            self.executor.bulk_exec_and_enqueue_and_set_primitive_to_output(step).await;
             step += 1;
 
             if step > 15 {

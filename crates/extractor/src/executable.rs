@@ -31,11 +31,11 @@ pub struct Executable<'executable_lifetime> {
     children: Option<Vec<&'executable_lifetime Executable<'executable_lifetime>>>,
     ast_node: Option<&'static Node>,
     mapping_key: Option<String>,
-    iter: Option<IteratorMeta>,
+    iter: Option<IteratorMeta<'executable_lifetime>>,
 }
 
 
-trait ExecutableT {
+impl Executable<'_> {
     pub fn new(
         name: String,
         step: usize,
@@ -203,20 +203,16 @@ trait ExecutableT {
             None
         }
     }
-    pub fn set_value(&mut self, value: Option<&PerfConfigItem>) {
+    pub fn set_value(&mut self, value: &str) {
         match self.type_kind {
             TypeKind::Primitive => {
-                if let Some(value) = value {
-                    self.value = Some(value.to_string().as_str().to_string());
-                } else {
-                    self.value = None;
-                }
+                self.value = value.map(String::from);
             },
             TypeKind::Array => {
                 // Set the value for an array
                 if let Some(value) = value {
                     if let Some(iter) = &mut self.iter {
-                        iter.to = value.to.as_ref().map(|s| s.parse().unwrap_or(0)).unwrap_or(0);
+                        iter.to = value;
                     }
                 }
             },
@@ -243,5 +239,3 @@ trait ExecutableT {
     }
 
 }
-
-impl ExecutableT for Executable {}

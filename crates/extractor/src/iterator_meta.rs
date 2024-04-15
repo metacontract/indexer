@@ -16,15 +16,15 @@ use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 
-pub struct IteratorMeta {
+pub struct IteratorMeta<'iterator_meta> {
     key_type: Option<String>,
     perf_config: Option<PerfConfigItem>,
-    items: Vec<Executable>,
+    items: Vec<Executable<'iterator_meta>>,
     from: usize,
-    to: usize,
+    pub to: usize,
 }
 
-impl IteratorMeta {
+impl IteratorMeta<'_> {
     pub fn new(
         key_type: Option<String>,
         perf_config: Option<PerfConfigItem>,

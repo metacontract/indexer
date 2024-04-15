@@ -8,7 +8,7 @@ use reqwest::Client;
 pub struct EthCall;
 
 impl EthCall {
-    pub async fn get_values_by_slots(slots: &HashMap<String, String>, network: &str, contract_address: &str, contract_code: &str) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
+    pub async fn get_values_by_slots<'a>(slots: &HashMap<String, &'a str>, network: &'a str, contract_address: &'a str, contract_code: &'a str) -> Result<HashMap<String, &'a str>, Box<dyn std::error::Error>> {
         let chain_list = Self::get_chain_list();
         let api_url = "http://127.0.0.1:8545";
 
@@ -58,7 +58,7 @@ impl EthCall {
         let mut index = 0;
         for (edfs, _) in slots {
             let value = &result[index..index + 64];
-            values.insert(edfs.clone(), value.to_string());
+            values.insert(edfs.clone(), &value.to_string());
             index += 64;
         }
 

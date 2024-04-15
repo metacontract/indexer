@@ -15,6 +15,8 @@ use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 
+
+#[derive(Clone)]
 pub struct Registry<'registry_lifetime> {
     perf_config_items: HashMap<String, PerfConfigItem>,
     output_flatten: HashMap<String, &'registry_lifetime Executable<'registry_lifetime>>,

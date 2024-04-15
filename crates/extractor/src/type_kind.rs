@@ -1,3 +1,4 @@
+#[derive(PartialEq)]
 pub enum TypeKind {
     Mapping,
     Array,
@@ -10,5 +11,5 @@ impl TypeKind {
             TypeKind::Mapping | TypeKind::Array => true,
             TypeKind::NaiveStruct | TypeKind::Primitive => false,
         }
-    }    
+    }
 }
