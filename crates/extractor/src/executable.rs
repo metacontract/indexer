@@ -9,20 +9,23 @@ use super::eth_call::EthCall;
 use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
+use super::context::Context;
 
 
 use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 
 #[derive(Clone)]
-pub struct Executable<'executable_lifetime> {
+pub struct Executable<'a> {
     pub id: usize,
     pub name: String,
     pub fulltype: String,
     pub step: usize,
-    pub belongs_to: Option<&'executable_lifetime Executable<'executable_lifetime>>,
+    pub belongs_to: Option<&'a Executable<'a>>,
     pub type_kind: TypeKind,
     pub value_type: String,
     offset: usize,
@@ -31,11 +34,10 @@ pub struct Executable<'executable_lifetime> {
     pub value: Option<String>,
     mapping_key: Option<String>,
     pub iter: Option<IteratorMeta>,
-    pub registry: &'executable_lifetime Registry<'executable_lifetime>,
 }
 
 
-impl Executable<'_> {
+impl<'a> Executable<'a> {
     pub fn new(
         id: usize,
         name: String,
@@ -48,7 +50,6 @@ impl Executable<'_> {
         relative_slot: String,
         mapping_key: Option<String>,
         iter: Option<IteratorMeta>,
-        registry: &Registry
     ) -> Self {
         Self {
             id,
@@ -64,7 +65,6 @@ impl Executable<'_> {
             value: None, // value
             mapping_key,
             iter,
-            registry
         }
     }
 
@@ -76,8 +76,8 @@ impl Executable<'_> {
         self.step += 1;
     }
 
-    pub fn labels(&self) -> Vec<String> {
-        let current_node = self.registry.ast_node.visit(&self.fulltype).unwrap();
+    pub fn labels(&self, context: &Context) -> Vec<String> {
+        let current_node = context.ast_node.visit(&self.fulltype).unwrap();
         let iter = self.iter.unwrap();
         let to = iter.to.unwrap();
 
@@ -98,11 +98,11 @@ impl Executable<'_> {
             }
         }
     }
-    pub fn children(&self) -> Vec<Executable> {
+    pub fn children(&self, context: &Context) -> Vec<Executable> {
         let mut children = Vec::new();
-        let labels = self.labels();
+        let labels = self.labels(&context);
         for i in 0..labels.len() {
-            let current_node = self.registry.ast_node.visit(&labels[i]).unwrap();
+            let current_node = context.ast_node.visit(&labels[i]).unwrap();
             let fulltype = current_node.get("type").unwrap().to_string();
             let parsed_type = ASTNode::parse_type_str(&fulltype);
             let new_executable = Executable::new(
@@ -129,39 +129,38 @@ impl Executable<'_> {
                 } else {
                     None
                 },
-                self.registry
             );
             children.push(new_executable);
         }
         children
     }
 
-    pub fn enqueue_execution(&self) {
-        self.registry.executor.unwrap().queue_per_step.insert(self.step, vec![self]);
+    pub fn enqueue_execution(&self, context: &Context) {
+        context.registry.queue_per_step.insert(self.step, vec![self]);
     }
-    pub fn enqueue_children(&self) -> () {
-        let children = self.children();
+    pub fn enqueue_children(&self, context: &Context) -> () {
+        let children = self.children(&context);
         for child in children {
-            child.enqueue_execution();
+            child.enqueue_execution(&context);
         }
     }
 
-    pub fn fill_iter_unless_empty_index(&self) -> bool {
+    pub fn fill_iter_unless_empty_index(&self, context: &Context) -> bool {
         // If the iterator's `to` field is empty (likely a mapping)
-        let perf_config_item = self.registry.get_perf_config_item(self.id);
+        let perf_config_item = context.registry.get_perf_config_item(self.id);
 
         let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
 
         let parsed_from = if let Some(from_expr) = from_expression {
-            PerfExpressionEvaluator::eval(from_expr)
+            PerfExpressionEvaluator::eval(from_expr, &mut context)
         } else {
             0
         };
         self.iter.unwrap().set_from(parsed_from);
 
         let parsed_to = if let Some(to_expr) = to_expression {
-            PerfExpressionEvaluator::eval(to_expr)
+            PerfExpressionEvaluator::eval(to_expr, &mut context)
         } else {
             0
         };
@@ -169,7 +168,7 @@ impl Executable<'_> {
 
         if parsed_to == 0 {
             self.increment_step();
-            self.enqueue_execution();
+            self.enqueue_execution(&context);
             false
         } else {
             true

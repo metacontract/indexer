@@ -15,10 +15,10 @@ use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 
-pub struct ASTNode<'astnode> {
+#[derive(Clone)]
+pub struct ASTNode {
     blob: Value,
     pub types: Value,
-    pub registry: Option<&'astnode Registry<'astnode>>,
 }
 pub struct ParsedASTType {
     pub envelope: Option<TypeKind>,
@@ -26,7 +26,7 @@ pub struct ParsedASTType {
     pub value_type: String,
 }
 
-impl ASTNode<'_> {
+impl ASTNode {
     pub fn type_kind(type_str: &str) -> TypeKind {
         let parsed_type = ASTNode::parse_type_str(type_str);
         if let Some(envelope) = parsed_type.envelope {
@@ -85,7 +85,6 @@ impl ASTNode<'_> {
         Self {
             blob,
             types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"],
-            registry: None,
         }
     }
 
@@ -94,8 +93,11 @@ impl ASTNode<'_> {
         return self.types.get(label).cloned();
     }
 
-    pub fn set_registry(&mut self, registry: &Registry) -> () {
-        self.registry = Some(registry);
+    pub fn dummy() -> Self {
+        // Create and return a dummy instance of ASTNode
+        ASTNode {
+            blob: serde_json::Value::default(),
+            types: serde_json::Value::default(),
+        }
     }
-
 }

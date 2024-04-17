@@ -1,0 +1,6 @@
+error: invalid type: integer `2024`, expected a string
+ --> Cargo.toml:9:11
+  |
+9 | edition = 2024
+  |           ^^^^
+  |

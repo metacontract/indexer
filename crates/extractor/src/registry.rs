@@ -14,34 +14,32 @@ use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 
-pub struct Registry<'registry_lifetime> {
+
+
+#[derive(Clone)]
+pub struct Registry<'a> {
+    pub queue_per_step: Vec<Vec<&'a Executable<'a>>>,
+    pub executed_per_step: Vec<Vec<&'a mut Executable<'a>>>,
     perf_config_items: HashMap<usize, PerfConfigItem>, // key=astId
-    output_flatten: HashMap<usize, &'registry_lifetime Executable<'registry_lifetime>>, // key=astId
-    pub ast_node: ASTNode<'registry_lifetime>,
-    pub executor: Option<&'registry_lifetime mut Executor<'registry_lifetime>>,
+    output_flatten: HashMap<usize, &'a Executable<'a>>, // key=astId
 }
 
 impl Registry<'_> {
-    pub fn new(perf_config_items: HashMap<usize, PerfConfigItem>, blob: Value) -> Self {
-        let ast_node = ASTNode::new(blob);
+    pub fn new(perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
         Self {
+            queue_per_step: Vec::new(),
+            executed_per_step: Vec::new(),
             perf_config_items,
             output_flatten: HashMap::new(),
-            ast_node,
-            executor: None, // executor
         }
     }
-    pub fn set_self_to_ast_node(&mut self) -> () {
-        self.ast_node.set_registry(&self);
-    }
-    pub fn set_executor(&mut self, executor: &mut Executor) -> () {
-        self.executor = Some(executor);
-    }
 
 
 
-    pub fn set_output(&mut self, id: usize, e: &Executable) {
-        self.output_flatten.insert(id, e);
+    pub fn set_primitives(&mut self, primitives: HashMap<usize, Executable>) -> () {        
+        for (id, e) in primitives.iter() {
+            self.output_flatten.insert(*id, e.clone());
+        }
     }
 
     pub fn get_output(&self, id: usize) -> Option<&&Executable> {
@@ -51,4 +49,13 @@ impl Registry<'_> {
     pub fn get_perf_config_item(&self, id: usize) -> Option<&PerfConfigItem> {
         self.perf_config_items.get(&id)
     }
+
+    pub fn flush_queue(&mut self, step: usize) {
+        self.queue_per_step[step].clear();
+    }
+
+    pub fn flush_executed(&mut self, step: usize) {
+        self.executed_per_step[step].clear();
+    }
+
 }
