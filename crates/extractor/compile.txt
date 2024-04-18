@@ -1,266 +1,173 @@
    Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
-error[E0308]: mismatched types
-  --> src/executor.rs:60:44
+error: lifetime may not live long enough
+  --> src/registry.rs:85:13
    |
-60 |                 primitives[&executed.id] = executed;
-   |                 ------------------------   ^^^^^^^^ expected `Executable<'_>`, found `&mut &mut Executable<'_>`
-   |                 |
-   |                 expected due to the type of this binding
-
-error[E0277]: the trait bound `&mut Executable<'_>: Clone` is not satisfied
-  --> src/registry.rs:22:5
-   |
-19 | #[derive(Clone)]
-   |          ----- in this derive macro expansion
+28 | impl<'b, 'a: 'b> Registry<'a> {
+   |      --  -- lifetime `'a` defined here
+   |      |
+   |      lifetime `'b` defined here
 ...
-22 |     pub executed_per_step: Vec<Vec<&'a mut Executable<'a>>>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `&mut Executable<'_>`, which is required by `Vec<Vec<&mut Executable<'_>>>: Clone`
+85 |             self.enqueue_execution(step, &child);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'b` must outlive `'a`
    |
-   = help: the trait `Clone` is implemented for `Executable<'a>`
-   = note: `Clone` is implemented for `&Executable<'_>`, but not for `&mut Executable<'_>`
-   = note: required for `Vec<&mut Executable<'_>>` to implement `Clone`
-   = note: 1 redundant requirement hidden
-   = note: required for `Vec<Vec<&mut Executable<'_>>>` to implement `Clone`
-   = note: this error originates in the derive macro `Clone` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = help: consider adding the following bound: `'b: 'a`
 
-error[E0308]: mismatched types
-  --> src/registry.rs:41:45
+error[E0621]: explicit lifetime required in the type of `executable`
+  --> src/registry.rs:85:13
    |
-41 |             self.output_flatten.insert(*id, e.clone());
-   |                                 ------      ^^^^^^^^^ expected `&Executable<'_>`, found `Executable<'_>`
-   |                                 |
-   |                                 arguments to this method are incorrect
-   |
-help: the return type of this call is `Executable<'_>` due to the type of the argument passed
-  --> src/registry.rs:41:13
-   |
-41 |             self.output_flatten.insert(*id, e.clone());
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------^
-   |                                             |
-   |                                             this argument influences the return type of `insert`
-note: method defined here
-  --> /rustc/ccfcd950b333fed046275dd8d54fe736ca498aa7/library/std/src/collections/hash/map.rs:1105:12
-help: consider borrowing here
-   |
-41 |             self.output_flatten.insert(*id, &e.clone());
-   |                                             +
-
-error[E0621]: explicit lifetime required in the type of `belongs_to`
-  --> src/executable.rs:54:9
-   |
-46 |           belongs_to: Option<&Executable>,
-   |                       ------------------- help: add explicit lifetime `'a` to the type of `belongs_to`: `Option<&'a Executable<'_>>`
+76 |     fn enqueue_children_execution(&mut self, step:usize, executable: &Executable, ast_node: &'b ASTNode){
+   |                                                                      ----------- help: add explicit lifetime `'a` to the type of `executable`: `&'a Executable<'_>`
 ...
-54 | /         Self {
-55 | |             id,
-56 | |             name,
-57 | |             fulltype,
-...  |
-67 | |             iter,
-68 | |         }
-   | |_________^ lifetime `'a` required
+85 |             self.enqueue_execution(step, &child);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
 
-error[E0621]: explicit lifetime required in the type of `belongs_to`
-  --> src/executable.rs:54:9
+error[E0621]: explicit lifetime required in the type of `executable`
+  --> src/registry.rs:85:13
    |
-46 |           belongs_to: Option<&Executable>,
-   |                       ------------------- help: add explicit lifetime `'a` to the type of `belongs_to`: `Option<&Executable<'a>>`
+76 |     fn enqueue_children_execution(&mut self, step:usize, executable: &Executable, ast_node: &'b ASTNode){
+   |                                                                      ----------- help: add explicit lifetime `'a` to the type of `executable`: `&Executable<'a>`
 ...
-54 | /         Self {
-55 | |             id,
-56 | |             name,
-57 | |             fulltype,
-...  |
-67 | |             iter,
-68 | |         }
-   | |_________^ lifetime `'a` required
+85 |             self.enqueue_execution(step, &child);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
 
-warning: unused variable: `i`
-  --> src/executable.rs:86:44
+warning: unused variable: `id`
+  --> src/registry.rs:89:14
    |
-86 |             let value_types = (0..to).map(|i| {
-   |                                            ^ help: if this is intentional, prefix it with an underscore: `_i`
+89 |         for (id, e) in executables.iter() {
+   |              ^^ help: if this is intentional, prefix it with an underscore: `_id`
    |
    = note: `#[warn(unused_variables)]` on by default
 
-error[E0596]: cannot borrow `context.ast_node` as mutable, as it is behind a `&` reference
-  --> src/executable.rs:80:28
+warning: unused variable: `ast_node`
+  --> src/registry.rs:88:95
    |
-80 |         let current_node = context.ast_node.visit(&self.fulltype).unwrap();
-   |                            ^^^^^^^^^^^^^^^^ `context` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+88 |     pub fn bulk_enqueue_execution(self, step:usize, executables: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+   |                                                                                               ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ast_node`
+
+error[E0596]: cannot borrow `self` as mutable, as it is not declared as mutable
+  --> src/registry.rs:90:13
+   |
+90 |             self.enqueue_execution(step, e);
+   |             ^^^^ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+88 |     pub fn bulk_enqueue_execution(mut self, step:usize, executables: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+   |                                   +++
+
+error[E0621]: explicit lifetime required in the type of `executables`
+  --> src/registry.rs:90:13
+   |
+88 |     pub fn bulk_enqueue_execution(self, step:usize, executables: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+   |                                                                  --------------------------- help: add explicit lifetime `'a` to the type of `executables`: `&HashMap<usize, Executable<'a>>`
+89 |         for (id, e) in executables.iter() {
+90 |             self.enqueue_execution(step, e);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
+
+warning: unused variable: `id`
+  --> src/registry.rs:95:14
+   |
+95 |         for (id, e) in filled_queueable_iterish.iter() {
+   |              ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+error[E0596]: cannot borrow `self` as mutable, as it is not declared as mutable
+  --> src/registry.rs:96:13
+   |
+96 |             self.enqueue_children_execution(step, e, &ast_node);
+   |             ^^^^ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+94 |     pub fn bulk_enqueue_children_execution(mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+   |                                            +++
+
+error[E0621]: explicit lifetime required in the type of `belongs_to`
+  --> src/executable.rs:52:9
+   |
+44 |           belongs_to: Option<&Executable>,
+   |                       ------------------- help: add explicit lifetime `'a` to the type of `belongs_to`: `Option<&'a Executable<'_>>`
+...
+52 | /         Self {
+53 | |             id,
+54 | |             name,
+55 | |             fulltype,
+...  |
+64 | |             iter,
+65 | |         }
+   | |_________^ lifetime `'a` required
+
+error[E0621]: explicit lifetime required in the type of `belongs_to`
+  --> src/executable.rs:52:9
+   |
+44 |           belongs_to: Option<&Executable>,
+   |                       ------------------- help: add explicit lifetime `'a` to the type of `belongs_to`: `Option<&Executable<'a>>`
+...
+52 | /         Self {
+53 | |             id,
+54 | |             name,
+55 | |             fulltype,
+...  |
+64 | |             iter,
+65 | |         }
+   | |_________^ lifetime `'a` required
+
+warning: unused variable: `i`
+  --> src/executable.rs:77:44
+   |
+77 |             let value_types = (0..to).map(|i| {
+   |                                            ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+error[E0596]: cannot borrow `*ast_node` as mutable, as it is behind a `&` reference
+  --> src/executable.rs:73:28
+   |
+73 |         let current_node = ast_node.visit(&self.fulltype).unwrap();
+   |                            ^^^^^^^^ `ast_node` is a `&` reference, so the data it refers to cannot be borrowed as mutable
    |
 help: consider changing this to be a mutable reference
    |
-79 |     pub fn labels(&self, context: &mut Context) -> Vec<String> {
-   |                                    +++
+72 |     pub fn labels(&self, to:usize, ast_node: &'a mut ASTNode) -> Vec<String> {
+   |                                                  +++
 
-error[E0507]: cannot move out of `self.iter` which is behind a shared reference
-  --> src/executable.rs:81:20
+error[E0596]: cannot borrow `*ast_node` as mutable, as it is behind a `&` reference
+  --> src/executable.rs:96:32
    |
-81 |         let iter = self.iter.unwrap();
-   |                    ^^^^^^^^^ -------- `self.iter` moved due to this method call
-   |                    |
-   |                    help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
-   |                    move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
+96 |             let current_node = ast_node.visit(&labels[i]).unwrap();
+   |                                ^^^^^^^^ `ast_node` is a `&` reference, so the data it refers to cannot be borrowed as mutable
    |
-note: `Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `self.iter`
-  --> /rustc/ccfcd950b333fed046275dd8d54fe736ca498aa7/library/core/src/option.rs:929:25
-help: you can `clone` the value and consume it, but this might not be your desired behavior
-   |
-81 |         let iter = <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap();
-   |                    ++++++++++++++++++++++++++++++++++++++++         +
-help: consider cloning the value if the performance cost is acceptable
-   |
-81 |         let iter = self.iter.clone().unwrap();
-   |                             ++++++++
-
-error[E0596]: cannot borrow `context.ast_node` as mutable, as it is behind a `&` reference
-   --> src/executable.rs:105:32
-    |
-105 |             let current_node = context.ast_node.visit(&labels[i]).unwrap();
-    |                                ^^^^^^^^^^^^^^^^ `context` is a `&` reference, so the data it refers to cannot be borrowed as mutable
-    |
 help: consider changing this to be a mutable reference
-    |
-101 |     pub fn children(&self, context: &mut Context) -> Vec<Executable> {
-    |                                      +++
+   |
+92 |     pub fn children(&self, to: usize, ast_node: &'a mut ASTNode) -> Vec<Executable> {
+   |                                                     +++
 
 error[E0382]: borrow of moved value: `fulltype`
-   --> src/executable.rs:114:36
+   --> src/executable.rs:104:36
     |
-106 |             let fulltype = current_node.get("type").unwrap().to_string();
+97  |             let fulltype = current_node.get("type").unwrap().to_string();
     |                 -------- move occurs because `fulltype` has type `std::string::String`, which does not implement the `Copy` trait
 ...
-111 |                 fulltype, // fulltype
+102 |                 fulltype, // fulltype
     |                 -------- value moved here
-...
-114 |                 ASTNode::type_kind(&fulltype), // type kind of the current node
+103 |                 Some(&self), // set the belongs_to to the current executable
+104 |                 ASTNode::type_kind(&fulltype), // type kind of the current node
     |                                    ^^^^^^^^^ value borrowed here after move
     |
 note: consider changing this parameter type in method `new` to borrow instead if owning the value isn't necessary
-   --> src/executable.rs:44:19
+   --> src/executable.rs:43:19
     |
-41  |     pub fn new(
+40  |     pub fn new(
     |            --- in this method
 ...
-44  |         fulltype: String,
+43  |         fulltype: String,
     |                   ^^^^^^ this parameter takes ownership of the value
 help: consider cloning the value if the performance cost is acceptable
     |
-111 |                 fulltype.clone(), // fulltype
+102 |                 fulltype.clone(), // fulltype
     |                         ++++++++
 
-error[E0596]: cannot borrow `context.registry.queue_per_step` as mutable, as it is behind a `&` reference
-   --> src/executable.rs:139:9
-    |
-139 |         context.registry.queue_per_step.insert(self.step, vec![self]);
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `context` is a `&` reference, so the data it refers to cannot be borrowed as mutable
-    |
-help: consider changing this to be a mutable reference
-    |
-138 |     pub fn enqueue_execution(&self, context: &mut Context) {
-    |                                               +++
-
-error[E0621]: explicit lifetime required in the type of `context`
-   --> src/executable.rs:139:9
-    |
-138 |     pub fn enqueue_execution(&self, context: &Context) {
-    |                                              -------- help: add explicit lifetime `'a` to the type of `context`: `&context::Context<'a>`
-139 |         context.registry.queue_per_step.insert(self.step, vec![self]);
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
-
-error: lifetime may not live long enough
-   --> src/executable.rs:139:9
-    |
-138 |     pub fn enqueue_execution(&self, context: &Context) {
-    |                              -      ------- has type `&context::Context<'2>`
-    |                              |
-    |                              let's call the lifetime of this reference `'1`
-139 |         context.registry.queue_per_step.insert(self.step, vec![self]);
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'1` must outlive `'2`
-
-error[E0596]: cannot borrow `context` as mutable, as it is not declared as mutable
-   --> src/executable.rs:148:48
-    |
-148 |     pub fn fill_iter_unless_empty_index(&self, context: &Context) -> bool {
-    |                                                ^^^^^^^ not mutable
-...
-156 |             PerfExpressionEvaluator::eval(from_expr, &mut context)
-    |                                                      ------------ cannot borrow as mutable
-...
-163 |             PerfExpressionEvaluator::eval(to_expr, &mut context)
-    |                                                    ------------ cannot borrow as mutable
-    |
-help: consider changing this to be mutable
-    |
-148 |     pub fn fill_iter_unless_empty_index(&self, mut context: &Context) -> bool {
-    |                                                +++
-
-error[E0596]: cannot borrow data in a `&` reference as mutable
-   --> src/executable.rs:156:54
-    |
-156 |             PerfExpressionEvaluator::eval(from_expr, &mut context)
-    |                                                      ^^^^^^^^^^^^ cannot borrow as mutable
-
-error[E0507]: cannot move out of `self.iter` which is behind a shared reference
-   --> src/executable.rs:160:9
-    |
-160 |         self.iter.unwrap().set_from(parsed_from);
-    |         ^^^^^^^^^ -------- `self.iter` moved due to this method call
-    |         |
-    |         help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
-    |         move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
-    |
-note: `Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `self.iter`
-   --> /rustc/ccfcd950b333fed046275dd8d54fe736ca498aa7/library/core/src/option.rs:929:25
-help: you can `clone` the value and consume it, but this might not be your desired behavior
-    |
-160 |         <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap().set_from(parsed_from);
-    |         ++++++++++++++++++++++++++++++++++++++++         +
-help: consider cloning the value if the performance cost is acceptable
-    |
-160 |         self.iter.clone().unwrap().set_from(parsed_from);
-    |                  ++++++++
-
-error[E0596]: cannot borrow data in a `&` reference as mutable
-   --> src/executable.rs:163:52
-    |
-163 |             PerfExpressionEvaluator::eval(to_expr, &mut context)
-    |                                                    ^^^^^^^^^^^^ cannot borrow as mutable
-
-error[E0507]: cannot move out of `self.iter` which is behind a shared reference
-   --> src/executable.rs:167:9
-    |
-167 |         self.iter.unwrap().set_to(parsed_to);
-    |         ^^^^^^^^^ -------- `self.iter` moved due to this method call
-    |         |
-    |         help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
-    |         move occurs because `self.iter` has type `Option<IteratorMeta>`, which does not implement the `Copy` trait
-    |
-help: you can `clone` the value and consume it, but this might not be your desired behavior
-    |
-167 |         <Option<IteratorMeta> as Clone>::clone(&self.iter).unwrap().set_to(parsed_to);
-    |         ++++++++++++++++++++++++++++++++++++++++         +
-help: consider cloning the value if the performance cost is acceptable
-    |
-167 |         self.iter.clone().unwrap().set_to(parsed_to);
-    |                  ++++++++
-
-error[E0596]: cannot borrow `*self` as mutable, as it is behind a `&` reference
-   --> src/executable.rs:170:13
-    |
-170 |             self.increment_step();
-    |             ^^^^ `self` is a `&` reference, so the data it refers to cannot be borrowed as mutable
-    |
-help: consider changing this to be a mutable reference
-    |
-148 |     pub fn fill_iter_unless_empty_index(&mut self, context: &Context) -> bool {
-    |                                         ~~~~~~~~~
-
 error[E0507]: cannot move out of `belongs_to.absolute_slot` as enum variant `Some` which is behind a shared reference
-   --> src/executable.rs:202:37
+   --> src/executable.rs:160:37
     |
-202 |             if let Some(abs_slot) = belongs_to.absolute_slot {
+160 |             if let Some(abs_slot) = belongs_to.absolute_slot {
     |                         --------    ^^^^^^^^^^^^^^^^^^^^^^^^
     |                         |
     |                         data moved here
@@ -268,7 +175,7 @@ error[E0507]: cannot move out of `belongs_to.absolute_slot` as enum variant `Som
     |
 help: consider borrowing here
     |
-202 |             if let Some(abs_slot) = &belongs_to.absolute_slot {
+160 |             if let Some(abs_slot) = &belongs_to.absolute_slot {
     |                                     +
 
 warning: variable does not need to be mutable
@@ -281,55 +188,11 @@ warning: variable does not need to be mutable
    |
    = note: `#[warn(unused_mut)]` on by default
 
-error[E0596]: cannot borrow `context` as mutable, as it is not declared as mutable
-  --> src/perf_expression_evaluator.rs:20:54
-   |
-20 |         Self::evaluate_expression(parsed_expression, &mut context)
-   |                                                      ^^^^^^^^^^^^ cannot borrow as mutable
-   |
-note: the binding is already a mutable borrow
-  --> src/perf_expression_evaluator.rs:18:46
-   |
-18 |     pub fn eval(expression: String, context: &mut Context) -> usize {
-   |                                              ^^^^^^^^^^^^
-help: try removing `&mut` here
-   |
-20 -         Self::evaluate_expression(parsed_expression, &mut context)
-20 +         Self::evaluate_expression(parsed_expression, context)
-   |
-
 warning: unused variable: `args`
   --> src/perf_expression_evaluator.rs:63:48
    |
 63 |             ExpressionNode::FunctionCall(func, args) => {
    |                                                ^^^^ help: if this is intentional, prefix it with an underscore: `_args`
-
-error[E0596]: cannot borrow `context` as mutable, as it is not declared as mutable
-  --> src/perf_expression_evaluator.rs:39:50
-   |
-39 |     fn evaluate_expression(node: ExpressionNode, context: &mut Context) -> usize {
-   |                                                  ^^^^^^^ not mutable
-...
-89 |                 let left_value = Self::evaluate_expression(*left, &mut context);
-   |                                                                   ------------ cannot borrow as mutable
-90 |                 let right_value = Self::evaluate_expression(*right, &mut context);
-   |                                                                     ------------ cannot borrow as mutable
-   |
-note: the binding is already a mutable borrow
-  --> src/perf_expression_evaluator.rs:39:59
-   |
-39 |     fn evaluate_expression(node: ExpressionNode, context: &mut Context) -> usize {
-   |                                                           ^^^^^^^^^^^^
-help: try removing `&mut` here
-   |
-89 -                 let left_value = Self::evaluate_expression(*left, &mut context);
-89 +                 let left_value = Self::evaluate_expression(*left, context);
-   |
-help: try removing `&mut` here
-   |
-90 -                 let right_value = Self::evaluate_expression(*right, &mut context);
-90 +                 let right_value = Self::evaluate_expression(*right, context);
-   |
 
 error[E0382]: borrow of moved value: `blob`
   --> src/ast_node.rs:87:20
@@ -366,7 +229,7 @@ warning: variable does not need to be mutable
    |         |
    |         help: remove this `mut`
 
-Some errors have detailed explanations: E0277, E0308, E0382, E0507, E0596, E0621.
-For more information about an error, try `rustc --explain E0277`.
-warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 4 warnings
-error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 23 previous errors; 4 warnings emitted
+Some errors have detailed explanations: E0382, E0507, E0596, E0621.
+For more information about an error, try `rustc --explain E0382`.
+warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 7 warnings
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 14 previous errors; 7 warnings emitted

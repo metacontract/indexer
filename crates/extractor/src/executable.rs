@@ -24,8 +24,7 @@ pub struct Executable<'a> {
     pub id: usize,
     pub name: String,
     pub fulltype: String,
-    pub step: usize,
-    pub belongs_to: Option<&'a Executable<'a>>,
+    pub belongs_to: Option<&'a Executable<'a>>, // to avoid recursive type
     pub type_kind: TypeKind,
     pub value_type: String,
     offset: usize,
@@ -42,7 +41,6 @@ impl<'a> Executable<'a> {
         id: usize,
         name: String,
         fulltype: String,
-        step: usize,
         belongs_to: Option<&Executable>,
         type_kind: TypeKind,
         value_type: String,
@@ -55,7 +53,6 @@ impl<'a> Executable<'a> {
             id,
             name,
             fulltype,
-            step,
             belongs_to,
             type_kind,
             value_type,
@@ -72,14 +69,8 @@ impl<'a> Executable<'a> {
         self.type_kind.is_iterish()
     }
 
-    pub fn increment_step(&mut self) {
-        self.step += 1;
-    }
-
-    pub fn labels(&self, context: &Context) -> Vec<String> {
-        let current_node = context.ast_node.visit(&self.fulltype).unwrap();
-        let iter = self.iter.unwrap();
-        let to = iter.to.unwrap();
+    pub fn labels(&self, to:usize, ast_node: &'a ASTNode) -> Vec<String> {
+        let current_node = ast_node.visit(&self.fulltype).unwrap();
 
         if self.is_iterish() && to > 0 {
             // This executable is iterable member
@@ -98,18 +89,17 @@ impl<'a> Executable<'a> {
             }
         }
     }
-    pub fn children(&self, context: &Context) -> Vec<Executable> {
+    pub fn children(&self, to: usize, ast_node: &'a ASTNode) -> Vec<Executable> {
         let mut children = Vec::new();
-        let labels = self.labels(&context);
+        let labels = self.labels(to, &ast_node);
         for i in 0..labels.len() {
-            let current_node = context.ast_node.visit(&labels[i]).unwrap();
+            let current_node = ast_node.visit(&labels[i]).unwrap();
             let fulltype = current_node.get("type").unwrap().to_string();
             let parsed_type = ASTNode::parse_type_str(&fulltype);
             let new_executable = Executable::new(
                 current_node.get("astId").unwrap().as_u64().unwrap() as usize, // astId
                 current_node.get("label").unwrap().to_string(), // label of the current node
                 fulltype, // fulltype
-                self.step + 1, // step of the current node
                 Some(&self), // set the belongs_to to the current executable
                 ASTNode::type_kind(&fulltype), // type kind of the current node
                 parsed_type.value_type, // type of the current node
@@ -123,8 +113,6 @@ impl<'a> Executable<'a> {
                 if ASTNode::type_kind(&fulltype).is_iterish() {
                     Some(IteratorMeta {
                         key_type: parsed_type.key_type,
-                        from: None,
-                        to: None,
                     })
                 } else {
                     None
@@ -134,61 +122,31 @@ impl<'a> Executable<'a> {
         }
         children
     }
+ 
 
-    pub fn enqueue_execution(&self, context: &Context) {
-        context.registry.queue_per_step.insert(self.step, vec![self]);
-    }
-    pub fn enqueue_children(&self, context: &Context) -> () {
-        let children = self.children(&context);
-        for child in children {
-            child.enqueue_execution(&context);
-        }
-    }
+    pub fn is_iter_readied(&self, registry: &Registry) -> bool {
+        let (_, to) = match registry.iterish_from_to.get(&self.id) {
+            Some((from, to)) => (*from, *to),
+            None => {
+                panic!("No from/to values found for executable with ID: {}", self.id);
+            }
+        };
 
-    pub fn fill_iter_unless_empty_index(&self, context: &Context) -> bool {
         // If the iterator's `to` field is empty (likely a mapping)
-        let perf_config_item = context.registry.get_perf_config_item(self.id);
-
-        let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
-        let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
-
-        let parsed_from = if let Some(from_expr) = from_expression {
-            PerfExpressionEvaluator::eval(from_expr, &mut context)
-        } else {
-            0
-        };
-        self.iter.unwrap().set_from(parsed_from);
-
-        let parsed_to = if let Some(to_expr) = to_expression {
-            PerfExpressionEvaluator::eval(to_expr, &mut context)
-        } else {
-            0
-        };
-        self.iter.unwrap().set_to(parsed_to);
-
-        if parsed_to == 0 {
-            self.increment_step();
-            self.enqueue_execution(&context);
+        if to == 0 {
             false
         } else {
             true
         }
     }
-
+    
     pub fn set_value(&mut self, value: String) {
         match self.type_kind {
             TypeKind::Primitive => {
                 self.value = Some(value);
             },
             TypeKind::Array => {
-                // Set the value for an array
-                if let Some(iter) = &mut self.iter {
-                    if let Ok(value_as_u64) = value.parse::<u64>() {
-                        iter.to = Some(value_as_u64 as usize);
-                    } else {
-                        panic!("Unable to parse value as u64: {}", value);
-                    }
-                }
+                // Deprecated: Registry::iterish_from_to is having it 
             },
             TypeKind::Mapping | TypeKind::NaiveStruct => {
                 // Skip setting the value for mappings and naive structs

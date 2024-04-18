@@ -27,8 +27,11 @@ pub struct Executor;
 
 impl Executor {
 
-    pub async fn bulk_exec_and_reload(step: usize, mut context: Context<'_>) -> Result<Context<'_>, Box<dyn Error>> {
-        let registry = &mut context.registry;
+    #[allow(unused_mut)]
+    pub async fn bulk_exec_and_reload<'b>(step: usize, mut context: Context<'_>) -> Result<Context, Box<dyn Error>> {
+        #[allow(unused_mut)]
+        let mut registry = context.registry;
+        let registry_clone = registry.clone(); // read only
 
         // [exec]
         // Get values by slots from EthCall
@@ -42,7 +45,11 @@ impl Executor {
         // [reload]
         // Process each executed executable
         let mut primitives: HashMap<usize, Executable> = HashMap::new();
+        let mut pending_fillable_iterish: HashMap<usize, Executable> = HashMap::new();
+        let mut filled_queueable_iterish: HashMap<usize, Executable> = HashMap::new();
         let executeds = &mut registry.executed_per_step[step];
+
+
         for executed in executeds {
             // Set the value for the executable based on the performance configuration item
             if let Some(value) = values.get(&executed.id) {
@@ -57,23 +64,27 @@ impl Executor {
             *******************/
             if executed.type_kind == TypeKind::Primitive {
                 // If the executable is a primitive, push it to the output
-                primitives[&executed.id] = executed;
+                primitives.insert(executed.id, executed.clone());
             } else if executed.is_iterish() {
-                if 
-                    executed.fill_iter_unless_empty_index(&context)
-                    ||
-                    !executed.is_iterish()
-                {
-                    executed.enqueue_children(&context);
+                if executed.is_iter_readied(&registry_clone) {
+                    filled_queueable_iterish.insert(executed.id, executed.clone());
                 } else {
-                    // Note: Un-filled iterish only goes here. Skip.
+                    pending_fillable_iterish.insert(executed.id, executed.clone());
                 }
             }
         }
-        registry.set_primitives(primitives);
+        let ast_node = &context.ast_node;
+        registry = registry.set_primitives(&primitives);
+        registry = registry.bulk_fill_from_to(&pending_fillable_iterish); // First pending_fillable_iterish usage is mut borrow
+        registry = registry.bulk_enqueue_execution(step+1, &pending_fillable_iterish);// Second pending_fillable_iterish usage is move (clone inside)
+        registry = registry.bulk_enqueue_children_execution(step+1, &filled_queueable_iterish, &ast_node);
 
         // Flush the executed executables for the current step
         registry.flush_executed(step);
+
+        // Update the context with the modified registry
+        context.registry = registry.clone();
+
         Ok(context)
     }
 }

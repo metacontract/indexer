@@ -58,7 +58,6 @@ impl<'a> Extractor<'a> {
                 i, // astId
                 name.to_string(), // label of the current node
                 String::from(fulltype), // fulltype
-                0, // Add the step parameter for base slot
                 None, // Pass self as the belongs_to parameter
                 type_kind,
                 value_type,

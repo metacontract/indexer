@@ -15,9 +15,9 @@ enum ExpressionNode {
 }
 
 impl PerfExpressionEvaluator {
-    pub fn eval(expression: String, context: &mut Context) -> usize {
+    pub fn eval(expression: String, registry: &Registry) -> usize {
         let parsed_expression = Self::parse_expression(expression);
-        Self::evaluate_expression(parsed_expression, &mut context)
+        Self::evaluate_expression(parsed_expression, &registry)
     }
 
     fn parse_expression(expression: String) -> ExpressionNode {
@@ -36,7 +36,7 @@ impl PerfExpressionEvaluator {
         ExpressionNode::Variable(expression)
     }
 
-    fn evaluate_expression(node: ExpressionNode, context: &mut Context) -> usize {
+    fn evaluate_expression(node: ExpressionNode, registry: &Registry) -> usize {
         match node {
             ExpressionNode::Variable(var) => {
                 // TODO: Use the ASTNode and Registry to get the corresponding executable accessor
@@ -86,8 +86,8 @@ impl PerfExpressionEvaluator {
             ExpressionNode::Operator(op, left, right) => {
                 // TODO: Evaluate the left and right operands recursively
                 // Apply the operator to the evaluated operands
-                let left_value = Self::evaluate_expression(*left, &mut context);
-                let right_value = Self::evaluate_expression(*right, &mut context);
+                let left_value = Self::evaluate_expression(*left, &registry);
+                let right_value = Self::evaluate_expression(*right, &registry);
                 match op.as_str() {
                     "/" => left_value / right_value,
                     "*" => left_value * right_value,

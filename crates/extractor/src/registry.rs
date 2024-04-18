@@ -18,31 +18,87 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct Registry<'a> {
-    pub queue_per_step: Vec<Vec<&'a Executable<'a>>>,
-    pub executed_per_step: Vec<Vec<&'a mut Executable<'a>>>,
+    pub queue_per_step: Vec<Vec<Executable<'a>>>,
+    pub executed_per_step: Vec<Vec<Executable<'a>>>,
     perf_config_items: HashMap<usize, PerfConfigItem>, // key=astId
-    output_flatten: HashMap<usize, &'a Executable<'a>>, // key=astId
+    pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=astId
+    output_flatten: HashMap<usize, Executable<'a>>, // key=astId
 }
 
-impl Registry<'_> {
+impl<'b, 'a: 'b> Registry<'a> {
     pub fn new(perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
         Self {
             queue_per_step: Vec::new(),
             executed_per_step: Vec::new(),
             perf_config_items,
+            iterish_from_to: HashMap::new(),
             output_flatten: HashMap::new(),
         }
     }
 
 
 
-    pub fn set_primitives(&mut self, primitives: HashMap<usize, Executable>) -> () {        
+    pub fn set_primitives(mut self, primitives: &HashMap<usize, Executable<'a>>) -> Self {        
         for (id, e) in primitives.iter() {
             self.output_flatten.insert(*id, e.clone());
         }
+        self
+    }
+    #[allow(unused_mut)]
+    pub fn bulk_fill_from_to(mut self, pending_fillable_iterish: &HashMap<usize, Executable<'b>>) -> Self {
+        for (id, _) in pending_fillable_iterish {
+            let (parsed_from, parsed_to) = self.get_parsed_index(*id);
+            self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
+        }
+        self
+    }
+    pub fn get_parsed_index(&self, astId: usize)-> (usize, usize) {
+        let perf_config_item = self.get_perf_config_item(astId);
+
+        let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
+        let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
+        let parsed_from = if let Some(from_expression) = from_expression {
+            PerfExpressionEvaluator::eval(from_expression, &self)
+        } else {
+            panic!("from_expression is None");
+        };
+        let parsed_to = if let Some(to_expression) = to_expression {
+            PerfExpressionEvaluator::eval(to_expression, &self)
+        } else {
+            panic!("to_expression is None");
+        };
+
+        (parsed_from, parsed_to)
+    }
+    pub fn enqueue_execution(&mut self, step: usize, executable: &Executable<'a>) -> () {
+        self.queue_per_step.insert(step, vec![executable.clone()]);
+    }
+    fn enqueue_children_execution(&mut self, step:usize, executable: &Executable, ast_node: &'b ASTNode){
+        let (_, to) = match self.iterish_from_to.get(&executable.id) {
+            Some((from, to)) => (*from, *to),
+            None => {
+                panic!("No from/to values found for executable with ID: {}", executable.id);
+            }
+        };
+        let children = executable.children(to, &ast_node);
+        for child in children {
+            self.enqueue_execution(step, &child);
+        }
+    }
+    pub fn bulk_enqueue_execution(self, step:usize, executables: &HashMap<usize, Executable>) -> Self {
+        for (_, e) in executables.iter() {
+            self.enqueue_execution(step, e);
+        }
+        self
+    }
+    pub fn bulk_enqueue_children_execution(self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+        for (_, e) in filled_queueable_iterish.iter() {
+            self.enqueue_children_execution(step, e, &ast_node);
+        }
+        self
     }
 
-    pub fn get_output(&self, id: usize) -> Option<&&Executable> {
+    pub fn get_output(&self, id: usize) -> Option<&Executable> {
         self.output_flatten.get(&id)
     }
 
