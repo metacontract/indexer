@@ -71,7 +71,7 @@ impl EthCall {
         let file_content = fs::read_to_string(file_path).expect("Unable to read file");
         let id_to_network: Value = serde_json::from_str(&file_content).expect("Unable to parse JSON");
         
-        let mut name_to_id: HashMap<String, i32> = id_to_network.as_object().unwrap().iter().map(|(k, v)| (v.as_str().unwrap().to_string(), k.parse::<i32>().unwrap())).collect();
+        let name_to_id: HashMap<String, i32> = id_to_network.as_object().unwrap().iter().map(|(k, v)| (v.as_str().unwrap().to_string(), k.parse::<i32>().unwrap())).collect();
         name_to_id
     }
 }

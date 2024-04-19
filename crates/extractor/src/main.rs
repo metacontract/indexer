@@ -37,9 +37,9 @@ fn main() {
     let storage_layout_blob = compiler.prepare_storage_layout().unwrap();
     let base_slots = compiler.prepare_base_slots().unwrap();
 
+    #[allow(unused_mut)]
     let mut context = Context {
-        registry: Registry::new(HashMap::new()),
-        ast_node: ASTNode::new(storage_layout_blob),
+        registry: Registry::new(storage_layout_blob, HashMap::new()),
     };
 
     let mut extractor = Extractor::new(context);

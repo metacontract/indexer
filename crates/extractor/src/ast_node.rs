@@ -16,10 +16,7 @@ use std::process::Command;
 use serde_json::Value;
 
 #[derive(Clone)]
-pub struct ASTNode {
-    blob: Value,
-    pub types: Value,
-}
+pub struct ASTNode;
 pub struct ParsedASTType {
     pub envelope: Option<TypeKind>,
     pub key_type: Option<String>,
@@ -76,28 +73,5 @@ impl ASTNode {
         }
 
         parsed_type
-    }
-
-
-    pub fn new(blob:Value) -> Self {
-        // ASTNode["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"][]
-
-        Self {
-            blob,
-            types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"],
-        }
-    }
-
-
-    pub fn visit(&mut self, label: &str) -> Option<Value> {
-        return self.types.get(label).cloned();
-    }
-
-    pub fn dummy() -> Self {
-        // Create and return a dummy instance of ASTNode
-        ASTNode {
-            blob: serde_json::Value::default(),
-            types: serde_json::Value::default(),
-        }
     }
 }

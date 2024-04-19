@@ -30,34 +30,30 @@ impl Executor {
     #[allow(unused_mut)]
     pub async fn bulk_exec_and_reload<'b>(step: usize, mut context: Context<'_>) -> Result<Context, Box<dyn Error>> {
         #[allow(unused_mut)]
+        let registry_clone1 = context.registry.clone();
         let mut registry = context.registry;
-        let registry_clone = registry.clone(); // read only
 
         // [exec]
         // Get values by slots from EthCall
-        let queue = &registry.queue_per_step;
-        let slots: HashMap<usize, String> = queue[step].iter().map(|executable| (executable.id, executable.absolute_slot.as_ref().map(|s| s.as_str()).unwrap_or_default().to_owned())).collect();
-        let values = EthCall::get_values_by_slots(&slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789012345678901234567890").await?;
+        let values = EthCall::get_values_by_slots(&registry.absolute_slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789012345678901234567890").await?;
 
         // Flush the queue for the current step
         registry.flush_queue(step);
 
         // [reload]
         // Process each executed executable
+        let mut absolute_slots: HashMap<usize, String> = HashMap::new();
         let mut primitives: HashMap<usize, Executable> = HashMap::new();
         let mut pending_fillable_iterish: HashMap<usize, Executable> = HashMap::new();
         let mut filled_queueable_iterish: HashMap<usize, Executable> = HashMap::new();
-        let executeds = &mut registry.executed_per_step[step];
+        let executeds = registry.executed_per_step[step].clone();
 
 
         for executed in executeds {
-            // Set the value for the executable based on the performance configuration item
-            if let Some(value) = values.get(&executed.id) {
-                executed.set_value(value.clone());
-            } else {
-                // Handle the case where the value is not found in the `values` map
-                // You may want to log an error or handle it in some other way
-            }
+            let executed_clone = executed.clone();
+            absolute_slots.insert(executed.id, executed_clone.calculate_absolute_slot(&registry_clone1));
+
+            registry = registry.bulk_save_values(values.clone());
 
             /******************
                 Enqueue next activatable executables
@@ -66,19 +62,19 @@ impl Executor {
                 // If the executable is a primitive, push it to the output
                 primitives.insert(executed.id, executed.clone());
             } else if executed.is_iterish() {
-                if executed.is_iter_readied(&registry_clone) {
+                let registry_clone2 = registry.clone(); // read only
+                if executed.is_iter_readied(&registry_clone2) {
                     filled_queueable_iterish.insert(executed.id, executed.clone());
                 } else {
                     pending_fillable_iterish.insert(executed.id, executed.clone());
                 }
             }
         }
-        let ast_node = &context.ast_node;
+        registry = registry.bulk_set_absolute_slots(&absolute_slots);
         registry = registry.set_primitives(&primitives);
-        registry = registry.bulk_fill_from_to(&pending_fillable_iterish); // First pending_fillable_iterish usage is mut borrow
-        registry = registry.bulk_enqueue_execution(step+1, &pending_fillable_iterish);// Second pending_fillable_iterish usage is move (clone inside)
-        registry = registry.bulk_enqueue_children_execution(step+1, &filled_queueable_iterish, &ast_node);
-
+        registry = registry.bulk_fill_from_to(&pending_fillable_iterish);
+        registry = registry.bulk_enqueue_execution(step+1, pending_fillable_iterish.clone());
+        registry = registry.bulk_enqueue_children_execution(step+1, filled_queueable_iterish.clone());
         // Flush the executed executables for the current step
         registry.flush_executed(step);
 

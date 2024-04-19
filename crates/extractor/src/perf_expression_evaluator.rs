@@ -60,7 +60,7 @@ impl PerfExpressionEvaluator {
                     _ => panic!("Unknown variable: {}", var),
                 }
             }
-            ExpressionNode::FunctionCall(func, args) => {
+            ExpressionNode::FunctionCall(func, _) => {
                 // TODO: Evaluate the arguments recursively
                 // Call the corresponding function with the evaluated arguments
                 match func.as_str() {

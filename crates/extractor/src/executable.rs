@@ -17,6 +17,8 @@ use std::process::Command;
 use serde_json::Value;
 use std::rc::Rc;
 use std::cell::RefCell;
+use ethers::utils::keccak256;
+use ethers::utils::hex;
 
 
 #[derive(Clone)]
@@ -29,8 +31,6 @@ pub struct Executable<'a> {
     pub value_type: String,
     offset: usize,
     relative_slot: String,
-    pub absolute_slot: Option<String>,
-    pub value: Option<String>,
     mapping_key: Option<String>,
     pub iter: Option<IteratorMeta>,
 }
@@ -41,7 +41,7 @@ impl<'a> Executable<'a> {
         id: usize,
         name: String,
         fulltype: String,
-        belongs_to: Option<&Executable>,
+        belongs_to: Option<&'a Executable>,
         type_kind: TypeKind,
         value_type: String,
         offset: usize,
@@ -58,8 +58,6 @@ impl<'a> Executable<'a> {
             value_type,
             offset,
             relative_slot,
-            absolute_slot: None, // absolute_slot
-            value: None, // value
             mapping_key,
             iter,
         }
@@ -69,12 +67,12 @@ impl<'a> Executable<'a> {
         self.type_kind.is_iterish()
     }
 
-    pub fn labels(&self, to:usize, ast_node: &'a ASTNode) -> Vec<String> {
-        let current_node = ast_node.visit(&self.fulltype).unwrap();
+    pub fn labels(&self, to:usize, registry: &Registry) -> Vec<String> {
+        let current_node = &registry.visitAST(&self.fulltype).unwrap();
 
         if self.is_iterish() && to > 0 {
             // This executable is iterable member
-            let value_types = (0..to).map(|i| {
+            let value_types = (0..to).map(|_| {
                 current_node.get("type").unwrap().to_string()
             }).collect();
             value_types
@@ -89,19 +87,19 @@ impl<'a> Executable<'a> {
             }
         }
     }
-    pub fn children(&self, to: usize, ast_node: &'a ASTNode) -> Vec<Executable> {
+    pub fn children(&self, to: usize, registry: &Registry) -> Vec<Executable> {
         let mut children = Vec::new();
-        let labels = self.labels(to, &ast_node);
+        let labels = self.labels(to, registry);
         for i in 0..labels.len() {
-            let current_node = ast_node.visit(&labels[i]).unwrap();
+            let current_node = registry.visitAST(&labels[i]).unwrap();
             let fulltype = current_node.get("type").unwrap().to_string();
-            let parsed_type = ASTNode::parse_type_str(&fulltype);
+            let parsed_type = ASTNode::parse_type_str(&fulltype.clone());
             let new_executable = Executable::new(
                 current_node.get("astId").unwrap().as_u64().unwrap() as usize, // astId
                 current_node.get("label").unwrap().to_string(), // label of the current node
-                fulltype, // fulltype
+                fulltype.clone(), // fulltype
                 Some(&self), // set the belongs_to to the current executable
-                ASTNode::type_kind(&fulltype), // type kind of the current node
+                ASTNode::type_kind(&fulltype.clone()), // type kind of the current node
                 parsed_type.value_type, // type of the current node
                 current_node.get("offset").unwrap().as_u64().unwrap() as usize, // offset of the current node
                 current_node.get("slot").unwrap().to_string(), // slot of the current node
@@ -140,34 +138,38 @@ impl<'a> Executable<'a> {
         }
     }
     
-    pub fn set_value(&mut self, value: String) {
-        match self.type_kind {
-            TypeKind::Primitive => {
-                self.value = Some(value);
+    pub fn calculate_absolute_slot(&self, registry: &Registry) -> String {
+        match self.belongs_to {
+            Some(belongs_to) => {
+                match registry.absolute_slots.get(&belongs_to.id) {
+                    Some(belongs_to_absolute_slot) => {
+                        let combined_slot = if belongs_to.is_iterish() {
+                            match &self.mapping_key {
+                                Some(mapping_key) => {
+                                    let iterable_absolute_slot = format!("{}{}", mapping_key, belongs_to_absolute_slot.trim_start_matches("0x"));
+                                    hex::encode(ethers::utils::keccak256(iterable_absolute_slot.as_bytes()))
+                                },
+                                None => {
+                                    panic!("No absolute_slot: {}", belongs_to.id);
+                                }            
+                            }
+                        } else {
+                            let abs_slot_num = belongs_to_absolute_slot.parse::<usize>().unwrap();
+                            let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
+                            format!("0x{:x}", abs_slot_num + relative_slot_num)
+                        };
+                        combined_slot
+                    },
+                    None => {
+                        panic!("No absolute_slot: {}", belongs_to.id);
+                    }            
+                }
             },
-            TypeKind::Array => {
-                // Deprecated: Registry::iterish_from_to is having it 
-            },
-            TypeKind::Mapping | TypeKind::NaiveStruct => {
-                // Skip setting the value for mappings and naive structs
+            None => {
+                panic!("No belongs_to: {}", self.id);
             }
         }
-    }
 
-    pub fn calculate_abs_slot(&mut self) -> () {
-        // iter must have belongs_to and so logic can be shorter
-        if let Some(belongs_to) = self.belongs_to {
-            if let Some(abs_slot) = belongs_to.absolute_slot {
-                let abs_slot_num = abs_slot.parse::<usize>().unwrap();
-                let relative_slot_num = self.relative_slot.parse::<usize>().unwrap();
-                let combined_slot = abs_slot_num + relative_slot_num;
-                self.absolute_slot = Some(format!("{:X}", combined_slot));
-            } else {
-                // Do nothing, as the error message suggests the function should return `()`
-            }
-        } else {
-            // Do nothing, as the error message suggests the function should return `()`
-        }
     }
 
 }

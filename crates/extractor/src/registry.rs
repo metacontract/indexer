@@ -23,16 +23,22 @@ pub struct Registry<'a> {
     perf_config_items: HashMap<usize, PerfConfigItem>, // key=astId
     pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=astId
     output_flatten: HashMap<usize, Executable<'a>>, // key=astId
+    pub types: Value,
+    pub absolute_slots: HashMap<usize, String>, // key=astId
+    pub values: HashMap<usize, String>, // key=astId
 }
 
 impl<'b, 'a: 'b> Registry<'a> {
-    pub fn new(perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
+    pub fn new(blob:Value, perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
         Self {
             queue_per_step: Vec::new(),
             executed_per_step: Vec::new(),
             perf_config_items,
             iterish_from_to: HashMap::new(),
             output_flatten: HashMap::new(),
+            types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"].clone(),
+            absolute_slots: HashMap::new(),
+            values: HashMap::new(),
         }
     }
 
@@ -70,32 +76,44 @@ impl<'b, 'a: 'b> Registry<'a> {
 
         (parsed_from, parsed_to)
     }
-    pub fn enqueue_execution(&mut self, step: usize, executable: &Executable<'a>) -> () {
-        self.queue_per_step.insert(step, vec![executable.clone()]);
+    pub fn enqueue_execution(&mut self, step: usize, executable: Executable<'a>) -> () {
+        self.queue_per_step.insert(step, vec![executable]);
     }
-    fn enqueue_children_execution(&mut self, step:usize, executable: &Executable, ast_node: &'b ASTNode){
+    fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>){
         let (_, to) = match self.iterish_from_to.get(&executable.id) {
             Some((from, to)) => (*from, *to),
             None => {
                 panic!("No from/to values found for executable with ID: {}", executable.id);
             }
         };
-        let children = executable.children(to, &ast_node);
+        let children = executable.children(to, self);
         for child in children {
-            self.enqueue_execution(step, &child);
+            self.enqueue_execution(step, child.clone());
         }
     }
-    pub fn bulk_enqueue_execution(self, step:usize, executables: &HashMap<usize, Executable>) -> Self {
+    pub fn bulk_enqueue_execution(mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> Self {
         for (_, e) in executables.iter() {
-            self.enqueue_execution(step, e);
+            self.enqueue_execution(step, e.clone());
         }
         self
     }
-    pub fn bulk_enqueue_children_execution(self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable>, ast_node: &'b ASTNode) -> Self {
+    pub fn bulk_enqueue_children_execution(mut self, step:usize, filled_queueable_iterish: HashMap<usize, Executable<'a>>) -> Self {
         for (_, e) in filled_queueable_iterish.iter() {
-            self.enqueue_children_execution(step, e, &ast_node);
+            self.enqueue_children_execution(step, e.clone());
         }
         self
+    }
+    pub fn bulk_set_absolute_slots(mut self, absolute_slots: &HashMap<usize, String>) -> Self {
+        for (id, slot) in absolute_slots.iter() {
+            self.absolute_slots.insert(*id, slot.clone());
+        }
+        self
+    }
+    pub fn bulk_save_values(mut self, values:HashMap<usize, String>) -> Self {
+        for (id, value) in values.iter() {
+            self.values.insert(*id, value.clone());
+        }
+        self        
     }
 
     pub fn get_output(&self, id: usize) -> Option<&Executable> {
@@ -113,5 +131,10 @@ impl<'b, 'a: 'b> Registry<'a> {
     pub fn flush_executed(&mut self, step: usize) {
         self.executed_per_step[step].clear();
     }
+
+    pub fn visitAST(&self, label: &str) -> Option<Value> {
+        return self.types.get(label).cloned();
+    }
+
 
 }
