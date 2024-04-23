@@ -6,7 +6,6 @@ use super::executable::Executable;
 use super::perf_config_item::PerfConfigItem;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
-use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
 
@@ -19,20 +18,18 @@ use serde_json::Value;
 #[derive(Clone)]
 pub struct Registry<'a> {
     pub queue_per_step: Vec<Vec<Executable<'a>>>,
-    pub executed_per_step: Vec<Vec<Executable<'a>>>,
     perf_config_items: HashMap<usize, PerfConfigItem>, // key=astId
     pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=astId
     output_flatten: HashMap<usize, Executable<'a>>, // key=astId
-    pub types: Value,
-    pub absolute_slots: HashMap<usize, String>, // key=astId
+    pub types: Value, // ast info
+    pub absolute_slots: HashMap<usize, String>, // key=step, astId
     pub values: HashMap<usize, String>, // key=astId
 }
 
-impl<'b, 'a: 'b> Registry<'a> {
+impl<'a> Registry<'a> {
     pub fn new(blob:Value, perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
         Self {
             queue_per_step: Vec::new(),
-            executed_per_step: Vec::new(),
             perf_config_items,
             iterish_from_to: HashMap::new(),
             output_flatten: HashMap::new(),
@@ -44,18 +41,18 @@ impl<'b, 'a: 'b> Registry<'a> {
 
 
 
-    pub fn set_primitives(mut self, primitives: &HashMap<usize, Executable<'a>>) -> Self {        
+    pub fn set_primitives(&mut self, primitives: HashMap<usize, Executable<'a>>) -> &mut Self {       
         for (id, e) in primitives.iter() {
             self.output_flatten.insert(*id, e.clone());
-        }
+        };
         self
     }
     #[allow(unused_mut)]
-    pub fn bulk_fill_from_to(mut self, pending_fillable_iterish: &HashMap<usize, Executable<'b>>) -> Self {
+    pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable<'a>>) -> &mut Self {
         for (id, _) in pending_fillable_iterish {
             let (parsed_from, parsed_to) = self.get_parsed_index(*id);
             self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
-        }
+        };
         self
     }
     pub fn get_parsed_index(&self, astId: usize)-> (usize, usize) {
@@ -79,7 +76,7 @@ impl<'b, 'a: 'b> Registry<'a> {
     pub fn enqueue_execution(&mut self, step: usize, executable: Executable<'a>) -> () {
         self.queue_per_step.insert(step, vec![executable]);
     }
-    fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>){
+    fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>) {
         let (_, to) = match self.iterish_from_to.get(&executable.id) {
             Some((from, to)) => (*from, *to),
             None => {
@@ -91,29 +88,32 @@ impl<'b, 'a: 'b> Registry<'a> {
             self.enqueue_execution(step, child.clone());
         }
     }
-    pub fn bulk_enqueue_execution(mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> Self {
+    pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> &mut Self {
         for (_, e) in executables.iter() {
             self.enqueue_execution(step, e.clone());
-        }
+        };
         self
     }
-    pub fn bulk_enqueue_children_execution(mut self, step:usize, filled_queueable_iterish: HashMap<usize, Executable<'a>>) -> Self {
+    pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: HashMap<usize, Executable<'b>>) -> &mut Self
+    where
+        'b: 'a,
+    {
         for (_, e) in filled_queueable_iterish.iter() {
             self.enqueue_children_execution(step, e.clone());
-        }
+        };
         self
     }
-    pub fn bulk_set_absolute_slots(mut self, absolute_slots: &HashMap<usize, String>) -> Self {
+    pub fn bulk_set_absolute_slots(&mut self, absolute_slots: &HashMap<usize, String>) -> &mut Self {
         for (id, slot) in absolute_slots.iter() {
             self.absolute_slots.insert(*id, slot.clone());
-        }
+        };
         self
     }
-    pub fn bulk_save_values(mut self, values:HashMap<usize, String>) -> Self {
+    pub fn bulk_save_values(&mut self, values:HashMap<usize, String>) -> &mut Self {
         for (id, value) in values.iter() {
             self.values.insert(*id, value.clone());
-        }
-        self        
+        };
+        self
     }
 
     pub fn get_output(&self, id: usize) -> Option<&Executable> {
@@ -122,14 +122,6 @@ impl<'b, 'a: 'b> Registry<'a> {
 
     pub fn get_perf_config_item(&self, id: usize) -> Option<&PerfConfigItem> {
         self.perf_config_items.get(&id)
-    }
-
-    pub fn flush_queue(&mut self, step: usize) {
-        self.queue_per_step[step].clear();
-    }
-
-    pub fn flush_executed(&mut self, step: usize) {
-        self.executed_per_step[step].clear();
     }
 
     pub fn visitAST(&self, label: &str) -> Option<Value> {

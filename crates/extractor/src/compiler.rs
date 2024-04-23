@@ -6,7 +6,6 @@
 // use super::perf_config_item::PerfConfigItem;
 // use super::type_kind::TypeKind;
 // use super::eth_call::EthCall;
-// use super::iterator_meta::IteratorMeta;
 // use super::perf_expression_evaluator::PerfExpressionEvaluator;
 // use super::ast_node::ASTNode;
 

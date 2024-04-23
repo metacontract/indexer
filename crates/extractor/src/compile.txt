@@ -1,0 +1,21 @@
+   Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
+error[E0597]: `executable` does not live long enough
+  --> src/registry.rs:86:24
+   |
+29 | impl<'a> Registry<'a> {
+   |      -- lifetime `'a` defined here
+...
+79 |     fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>) {
+   |                                                          ---------- binding `executable` declared here
+...
+86 |         let children = executable.children(to, self);
+   |                        ^^^^^^^^^^-------------------
+   |                        |
+   |                        borrowed value does not live long enough
+   |                        argument requires that `executable` is borrowed for `'a`
+...
+90 |     }
+   |     - `executable` dropped here while still borrowed
+
+For more information about this error, try `rustc --explain E0597`.
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 1 previous error

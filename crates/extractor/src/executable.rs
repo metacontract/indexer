@@ -6,7 +6,6 @@ use super::registry::Registry;
 use super::perf_config_item::PerfConfigItem;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
-use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
 use super::context::Context;
@@ -32,7 +31,7 @@ pub struct Executable<'a> {
     offset: usize,
     relative_slot: String,
     mapping_key: Option<String>,
-    pub iter: Option<IteratorMeta>,
+    pub key_type: Option<String>,
 }
 
 
@@ -47,7 +46,7 @@ impl<'a> Executable<'a> {
         offset: usize,
         relative_slot: String,
         mapping_key: Option<String>,
-        iter: Option<IteratorMeta>,
+        key_type: Option<String>,
     ) -> Self {
         Self {
             id,
@@ -59,7 +58,7 @@ impl<'a> Executable<'a> {
             offset,
             relative_slot,
             mapping_key,
-            iter,
+            key_type,
         }
     }
 
@@ -108,16 +107,10 @@ impl<'a> Executable<'a> {
                 } else {
                     None // depends on is_iterish
                 },
-                if ASTNode::type_kind(&fulltype).is_iterish() {
-                    Some(IteratorMeta {
-                        key_type: parsed_type.key_type,
-                    })
-                } else {
-                    None
-                },
+                parsed_type.key_type,
             );
             children.push(new_executable);
-        }
+        };
         children
     }
  

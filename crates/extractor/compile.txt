@@ -1,21 +1,23 @@
    Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
-error[E0597]: `executable` does not live long enough
-  --> src/registry.rs:89:24
+error: lifetime may not live long enough
+  --> src/registry.rs:49:13
    |
-31 | impl<'b, 'a: 'b> Registry<'a> {
-   |          -- lifetime `'a` defined here
-...
-82 |     fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>){
-   |                                                          ---------- binding `executable` declared here
-...
-89 |         let children = executable.children(to, self);
-   |                        ^^^^^^^^^^-------------------
-   |                        |
-   |                        borrowed value does not live long enough
-   |                        argument requires that `executable` is borrowed for `'a`
-...
-93 |     }
-   |     - `executable` dropped here while still borrowed
+47 |     pub fn set_primitives<'a>(mut self, primitives: &HashMap<usize, Executable<'a>>) {        
+   |                           --  -------- has type `Registry<'1>`
+   |                           |
+   |                           lifetime `'a` defined here
+48 |         for (id, e) in primitives.iter() {
+49 |             self.output_flatten.insert(*id, e.clone());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'a` must outlive `'1`
 
-For more information about this error, try `rustc --explain E0597`.
-error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 1 previous error
+error: lifetime may not live long enough
+  --> src/registry.rs:78:9
+   |
+77 |     pub fn enqueue_execution<'a>(&mut self, step: usize, executable: Executable<'a>) -> () {
+   |                              --  --------- has type `&mut Registry<'1>`
+   |                              |
+   |                              lifetime `'a` defined here
+78 |         self.queue_per_step.insert(step, vec![executable]);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'a` must outlive `'1`
+
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 2 previous errors

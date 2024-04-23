@@ -5,7 +5,6 @@ use super::executable::Executable;
 use super::perf_config_item::PerfConfigItem;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
-use super::iterator_meta::IteratorMeta;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
 use super::ast_node::ASTNode;
 use super::context::Context;
@@ -77,15 +76,13 @@ impl<'a> Extractor<'a> {
 
     pub async fn scan_contract(&mut self) {
         while self.state.step <= 15 {
-            let context = mem::replace(&mut self.state.context, Context::dummy());
-            let new_context = match Executor::bulk_exec_and_reload(self.state.step, context.clone()).await {
-                Ok(context) => context,
+            match Executor::bulk_exec_and_reload(self.state.step, self.state.context.clone()).await {
+                Ok(()) => (),
                 Err(err) => {
                     println!("Error reloading context: {}", err);
                     break;
                 }
             };
-            mem::replace(&mut self.state.context, new_context);
 
             self.state.step += 1;
         }

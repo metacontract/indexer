@@ -8,7 +8,6 @@ mod executable;
 mod perf_config_item;
 mod type_kind;
 mod eth_call;
-mod iterator_meta;
 mod perf_expression_evaluator;
 mod ast_node;
 mod context;
@@ -21,7 +20,6 @@ use executable::Executable;
 use perf_config_item::PerfConfigItem;
 use type_kind::TypeKind;
 use eth_call::EthCall;
-use iterator_meta::IteratorMeta;
 use perf_expression_evaluator::PerfExpressionEvaluator;
 use ast_node::ASTNode;
 use context::Context;
@@ -29,6 +27,7 @@ use context::Context;
 use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
+use std::cell::RefCell;
 
 
 
