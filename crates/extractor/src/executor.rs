@@ -70,7 +70,7 @@ impl Executor {
             .set_primitives(primitives.clone())
             .bulk_fill_from_to(&pending_fillable_iterish)
             .bulk_enqueue_execution(step+1, pending_fillable_iterish.clone())
-            .bulk_enqueue_children_execution(step+1, filled_queueable_iterish.clone());
+            .bulk_enqueue_children_execution(step+1, &filled_queueable_iterish);
 
         Ok(())
     }

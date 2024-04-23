@@ -86,7 +86,7 @@ impl<'a> Executable<'a> {
             }
         }
     }
-    pub fn children(&self, to: usize, registry: &Registry) -> Vec<Executable> {
+    pub fn children(&'a self, to: usize, registry: &'a mut Registry<'a>) -> (&'a mut Registry<'a>, Vec<Executable<'a>>) {
         let mut children = Vec::new();
         let labels = self.labels(to, registry);
         for i in 0..labels.len() {
@@ -111,7 +111,7 @@ impl<'a> Executable<'a> {
             );
             children.push(new_executable);
         };
-        children
+        (&mut registry, children)
     }
  
 

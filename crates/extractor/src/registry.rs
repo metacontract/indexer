@@ -73,33 +73,31 @@ impl<'a> Registry<'a> {
 
         (parsed_from, parsed_to)
     }
-    pub fn enqueue_execution(&mut self, step: usize, executable: Executable<'a>) -> () {
-        self.queue_per_step.insert(step, vec![executable]);
+
+    pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> &mut Self {
+        for (_, e) in executables.iter() {
+            self.queue_per_step.insert(step, vec![e.clone()]);
+        };
+        self
     }
-    fn enqueue_children_execution(&mut self, step:usize, executable: Executable<'a>) {
+    fn enqueue_children_execution(&'a mut self, step:usize, executable: &'a Executable<'a>) -> &'a mut Self
+    {
         let (_, to) = match self.iterish_from_to.get(&executable.id) {
             Some((from, to)) => (*from, *to),
             None => {
                 panic!("No from/to values found for executable with ID: {}", executable.id);
             }
         };
-        let children = executable.children(to, self);
-        for child in children {
-            self.enqueue_execution(step, child.clone());
-        }
+        let (self_returned, children) = executable.children(to, self);
+        self_returned.queue_per_step.insert(step, children);
+        &mut self_returned
     }
-    pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> &mut Self {
-        for (_, e) in executables.iter() {
-            self.enqueue_execution(step, e.clone());
-        };
-        self
-    }
-    pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: HashMap<usize, Executable<'b>>) -> &mut Self
+    pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut Self
     where
         'b: 'a,
     {
         for (_, e) in filled_queueable_iterish.iter() {
-            self.enqueue_children_execution(step, e.clone());
+            self.enqueue_children_execution(step, e);
         };
         self
     }
