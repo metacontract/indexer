@@ -5,6 +5,9 @@
 - You can run it in your frontend server or Cloudflare D1 instance (edge computing for low-latency querying).
 - Scale until "Your RAM Size > Your Dapp Indexer Size" with in-memory SQLite setting.
 
+## Dependencies
+- `brew install pkg-config openssl`
+
 # Diagrams
 ```mermaid
 classDiagram

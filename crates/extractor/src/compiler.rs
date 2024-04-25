@@ -8,11 +8,14 @@
 // use super::eth_call::EthCall;
 // use super::perf_expression_evaluator::PerfExpressionEvaluator;
 // use super::ast_node::ASTNode;
+use super::mc_repo_fetcher::MCRepoFetcher;
 
 
 use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
+use std::env;
+use std::path::PathBuf;
 
 
 pub struct Compiler {
@@ -27,10 +30,11 @@ impl Compiler {
     }
 
     pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let solc_opts = "./solcBaseSlotsOpts.json";
+        let standard_json_input_path = PathBuf::from(env::var("STANDARD_JSON_INPUT_BASESLOTS_PATH").unwrap());
+
         let output = Command::new(&self.solc_path)
             .arg("--standard-json")
-            .arg(solc_opts)
+            .arg(standard_json_input_path)
             .output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
@@ -40,10 +44,10 @@ impl Compiler {
     }
 
     pub fn prepare_storage_layout(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let solc_opts = "./solcLayoutOpts.json";
+        let standard_json_input_path = PathBuf::from(env::var("STANDARD_JSON_INPUT_LAYOUT_PATH").unwrap());
         let output = Command::new(&self.solc_path)
             .arg("--standard-json")
-            .arg(solc_opts)
+            .arg(standard_json_input_path)
             .output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
@@ -51,22 +55,38 @@ impl Compiler {
 
         Ok(parsed)
     }
+
+
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn prepare_storage_layout() {
-        let mut compiler = Compiler::new("solc".to_string());
-        let storage_layout_blob = match compiler.prepare_storage_layout() {
-            Ok(blob) => blob,
-            Err(err) => {
-                panic!("Error preparing storage layout: {}", err);
-            }
-        };
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use tempfile::tempdir;
+        use std::fs;
+    
+        #[test]
+        fn test_prepare_storage_layout() {
+            dotenv::dotenv().ok();
 
-        assert_eq!(storage_layout_blob, 1);
+            let mc_repo_fetcher = MCRepoFetcher::new(env::var("REPO_IDENTIFIER").unwrap(), env::var("BUNDLE_NAME").unwrap());
+            mc_repo_fetcher.clone_repo().unwrap();
+
+            let mut compiler = Compiler::new("solc".to_string());
+            let storage_layout_blob = match compiler.prepare_storage_layout() {
+                Ok(blob) => blob,
+                Err(err) => {
+                    panic!("Error preparing storage layout: {}", err);
+                }
+            };
+    
+            println!("storage_layout_blob: {:?}", storage_layout_blob);
+            assert!(storage_layout_blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"].is_object());
+        }
     }
+
 }

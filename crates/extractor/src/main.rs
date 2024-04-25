@@ -11,6 +11,9 @@ mod eth_call;
 mod perf_expression_evaluator;
 mod ast_node;
 mod context;
+mod mc_repo_fetcher;
+
+extern crate dotenv;
 
 use compiler::Compiler;
 use extractor::Extractor;
@@ -23,15 +26,24 @@ use eth_call::EthCall;
 use perf_expression_evaluator::PerfExpressionEvaluator;
 use ast_node::ASTNode;
 use context::Context;
+use mc_repo_fetcher::MCRepoFetcher;
 
 use std::collections::HashMap;
 use std::process::Command;
 use serde_json::Value;
 use std::cell::RefCell;
-
+use std::env;
 
 fn main() {
+    dotenv::dotenv().ok();
     let mut compiler = Compiler::new("solc".to_string());
+
+    let identifier = env::var("REPO_IDENTIFIER").unwrap();
+    let bundle = env::var("BUNDLE_NAME").unwrap();
+
+    let mc_repo_fetcher = MCRepoFetcher::new(identifier, bundle);
+    mc_repo_fetcher.clone_repo().unwrap();
+    mc_repo_fetcher.gen_standard_json_input().unwrap();
     let storage_layout_blob = compiler.prepare_storage_layout().unwrap();
     let base_slots = compiler.prepare_base_slots().unwrap();
 
@@ -42,5 +54,6 @@ fn main() {
 
     let mut extractor = Extractor::new(context);
     extractor.init_members_from_compiler(&base_slots);
+
     extractor.listen();
 }
