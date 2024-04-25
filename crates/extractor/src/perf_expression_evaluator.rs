@@ -6,6 +6,7 @@ use std::cell::RefCell;
 
 pub struct PerfExpressionEvaluator;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 enum ExpressionNode {
     Variable(String),

@@ -1,0 +1,72 @@
+   Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
+error[E0507]: cannot move out of a mutable reference
+  --> src/registry.rs:91:50
+   |
+91 |         let (&mut mut self_returned, children) = executable.children(to, self);
+   |                   -----------------              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |                   |
+   |                   data moved here
+   |                   move occurs because `self_returned` has type `Registry<'_>`, which does not implement the `Copy` trait
+   |
+help: consider borrowing the pattern binding
+   |
+91 |         let (&mut ref mut self_returned, children) = executable.children(to, self);
+   |                   +++
+
+error[E0515]: cannot return reference to local variable `self_returned`
+  --> src/registry.rs:93:9
+   |
+93 |         &mut self_returned
+   |         ^^^^^^^^^^^^^^^^^^ returns a reference to data owned by the current function
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> src/registry.rs:100:13
+    |
+29  | impl<'a> Registry<'a> {
+    |      -- lifetime `'a` defined here
+...
+100 |             self.enqueue_children_execution(step, e);
+    |             ^^^^------------------------------------
+    |             |
+    |             `*self` was mutably borrowed here in the previous iteration of the loop
+    |             argument requires that `*self` is borrowed for `'a`
+
+error: lifetime may not live long enough
+   --> src/registry.rs:100:13
+    |
+29  | impl<'a> Registry<'a> {
+    |      -- lifetime `'a` defined here
+...
+95  |     pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut ...
+    |                                                - let's call the lifetime of this reference `'1`
+...
+100 |             self.enqueue_children_execution(step, e);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'1` must outlive `'a`
+
+error[E0621]: explicit lifetime required in the type of `filled_queueable_iterish`
+   --> src/registry.rs:100:13
+    |
+95  | ...ub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut Self
+    |                                                                                               ------------------------------- help: add explicit lifetime `'a` to the type of `filled_queueable_iterish`: `&'a HashMap<usize, Executable<'b>>`
+...
+100 | ...       self.enqueue_children_execution(step, e);
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> src/registry.rs:102:9
+    |
+29  | impl<'a> Registry<'a> {
+    |      -- lifetime `'a` defined here
+...
+100 |             self.enqueue_children_execution(step, e);
+    |             ----------------------------------------
+    |             |
+    |             first mutable borrow occurs here
+    |             argument requires that `*self` is borrowed for `'a`
+101 |         };
+102 |         self
+    |         ^^^^ second mutable borrow occurs here
+
+Some errors have detailed explanations: E0499, E0507, E0515, E0621.
+For more information about an error, try `rustc --explain E0499`.
+error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 6 previous errors

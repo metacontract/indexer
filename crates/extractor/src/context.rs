@@ -5,6 +5,6 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 #[derive(Clone)]
-pub struct Context<'a> {
-    pub registry: Registry<'a>,
+pub struct Context {
+    pub registry: Registry,
 }

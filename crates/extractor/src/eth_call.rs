@@ -9,7 +9,7 @@ use reqwest::Client;
 pub struct EthCall;
 
 impl EthCall {
-    pub async fn get_values_by_slots<'a>(slots: &HashMap<usize, String>, network: &'a str, contract_address: &'a str, contract_code: &'a str) -> Result<HashMap<usize, String>, Box<dyn std::error::Error>> {
+    pub async fn get_values_by_slots(slots: &HashMap<usize, String>, network: &str, contract_address: &str, contract_code: &str) -> Result<HashMap<usize, String>, Box<dyn std::error::Error>> {
         let chain_list = Self::get_chain_list();
         let api_url = "http://127.0.0.1:8545";
 
@@ -57,9 +57,9 @@ impl EthCall {
         // Parse the result and return the values as a HashMap mapping astId to value
         let mut values: HashMap<usize, String> = HashMap::new();
         let mut index = 0;
-        for (astId, _) in slots {
+        for (ast_id, _) in slots {
             let value = &result[index..index + 64];
-            values.insert(*astId, value.to_string());
+            values.insert(*ast_id, value.to_string());
             index += 64;
         }
 

@@ -16,17 +16,17 @@ use serde_json::Value;
 
 
 #[derive(Clone)]
-pub struct Registry<'a> {
-    pub queue_per_step: Vec<Vec<Executable<'a>>>,
-    perf_config_items: HashMap<usize, PerfConfigItem>, // key=astId
-    pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=astId
-    output_flatten: HashMap<usize, Executable<'a>>, // key=astId
+pub struct Registry {
+    pub queue_per_step: Vec<Vec<Executable>>,
+    perf_config_items: HashMap<usize, PerfConfigItem>, // key=ast_id
+    pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=ast_id
+    output_flatten: HashMap<usize, Executable>, // key=ast_id
     pub types: Value, // ast info
-    pub absolute_slots: HashMap<usize, String>, // key=step, astId
-    pub values: HashMap<usize, String>, // key=astId
+    pub absolute_slots: HashMap<usize, String>, // key=step, ast_id
+    pub values: HashMap<usize, String>, // key=ast_id
 }
 
-impl<'a> Registry<'a> {
+impl Registry {
     pub fn new(blob:Value, perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
         Self {
             queue_per_step: Vec::new(),
@@ -41,22 +41,22 @@ impl<'a> Registry<'a> {
 
 
 
-    pub fn set_primitives(&mut self, primitives: HashMap<usize, Executable<'a>>) -> &mut Self {       
+    pub fn set_primitives(&mut self, primitives: HashMap<usize, Executable>) -> &mut Self {       
         for (id, e) in primitives.iter() {
             self.output_flatten.insert(*id, e.clone());
         };
         self
     }
     #[allow(unused_mut)]
-    pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable<'a>>) -> &mut Self {
+    pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable>) -> &mut Self {
         for (id, _) in pending_fillable_iterish {
             let (parsed_from, parsed_to) = self.get_parsed_index(*id);
             self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
         };
         self
     }
-    pub fn get_parsed_index(&self, astId: usize)-> (usize, usize) {
-        let perf_config_item = self.get_perf_config_item(astId);
+    pub fn get_parsed_index(&self, ast_id: usize)-> (usize, usize) {
+        let perf_config_item = self.get_perf_config_item(ast_id);
 
         let from_expression = perf_config_item.as_ref().and_then(|item| item.from.clone());
         let to_expression = perf_config_item.as_ref().and_then(|item| item.to.clone());
@@ -74,28 +74,28 @@ impl<'a> Registry<'a> {
         (parsed_from, parsed_to)
     }
 
-    pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable<'a>>) -> &mut Self {
+    pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable>) -> &mut Self {
         for (_, e) in executables.iter() {
             self.queue_per_step.insert(step, vec![e.clone()]);
         };
         self
     }
-    fn enqueue_children_execution(&'a mut self, step:usize, executable: &'a Executable<'a>) -> &'a mut Self
+    fn enqueue_children_execution(&mut self, step:usize, executable: &Executable) -> &mut Self
     {
-        let (_, to) = match self.iterish_from_to.get(&executable.id) {
-            Some((from, to)) => (*from, *to),
-            None => {
-                panic!("No from/to values found for executable with ID: {}", executable.id);
-            }
-        };
-        let (self_returned, children) = executable.children(to, self);
-        self_returned.queue_per_step.insert(step, children);
-        &mut self_returned
+        let mut _self = self;
+        {
+            let (_, to) = match _self.iterish_from_to.get(&executable.id) {
+                Some((from, to)) => (*from, *to),
+                None => {
+                    panic!("No from/to values found for executable with ID: {}", executable.id);
+                }
+            };
+            let children = executable.children(to, _self);
+            _self.queue_per_step.insert(step, children);
+            _self
+        }
     }
-    pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut Self
-    where
-        'b: 'a,
-    {
+    pub fn bulk_enqueue_children_execution(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable>) -> &mut Self {
         for (_, e) in filled_queueable_iterish.iter() {
             self.enqueue_children_execution(step, e);
         };
@@ -114,15 +114,11 @@ impl<'a> Registry<'a> {
         self
     }
 
-    pub fn get_output(&self, id: usize) -> Option<&Executable> {
-        self.output_flatten.get(&id)
-    }
-
     pub fn get_perf_config_item(&self, id: usize) -> Option<&PerfConfigItem> {
         self.perf_config_items.get(&id)
     }
 
-    pub fn visitAST(&self, label: &str) -> Option<Value> {
+    pub fn visit_ast(&self, label: &str) -> Option<Value> {
         return self.types.get(label).cloned();
     }
 

@@ -16,18 +16,18 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::mem;
 
-pub struct Extractor<'a> {
-    initial_members: Vec<Executable<'a>>,
-    state: ExtractorState<'a>,
+pub struct Extractor {
+    initial_members: Vec<Executable>,
+    state: ExtractorState,
 }
 
-struct ExtractorState<'a> {
+struct ExtractorState {
     step: usize,
-    context: Context<'a>,
+    context: Context,
 }
 
-impl<'a> Extractor<'a> {
-    pub fn new(context: Context<'a>) -> Self {
+impl Extractor {
+    pub fn new(context: Context) -> Self {
         Self {
             initial_members: Vec::new(),
             state: ExtractorState {
@@ -69,7 +69,7 @@ impl<'a> Extractor<'a> {
             i -= 1;
         }
     }
-    pub async fn listen(&'a mut self) {
+    pub async fn listen(&mut self) {
         self.scan_contract();
     }
 

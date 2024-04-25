@@ -30,7 +30,6 @@ use serde_json::Value;
 use std::cell::RefCell;
 
 
-
 fn main() {
     let mut compiler = Compiler::new("solc".to_string());
     let storage_layout_blob = compiler.prepare_storage_layout().unwrap();

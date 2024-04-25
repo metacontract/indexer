@@ -20,12 +20,13 @@ use ethers::utils::keccak256;
 use ethers::utils::hex;
 
 
+#[allow(dead_code)]
 #[derive(Clone)]
-pub struct Executable<'a> {
+pub struct Executable {
     pub id: usize,
     pub name: String,
     pub fulltype: String,
-    pub belongs_to: Option<&'a Executable<'a>>, // to avoid recursive type
+    pub belongs_to: Option<Box<Executable>>,
     pub type_kind: TypeKind,
     pub value_type: String,
     offset: usize,
@@ -35,12 +36,12 @@ pub struct Executable<'a> {
 }
 
 
-impl<'a> Executable<'a> {
+impl Executable {
     pub fn new(
         id: usize,
         name: String,
         fulltype: String,
-        belongs_to: Option<&'a Executable>,
+        belongs_to: Option<Box<Executable>>,
         type_kind: TypeKind,
         value_type: String,
         offset: usize,
@@ -67,7 +68,7 @@ impl<'a> Executable<'a> {
     }
 
     pub fn labels(&self, to:usize, registry: &Registry) -> Vec<String> {
-        let current_node = &registry.visitAST(&self.fulltype).unwrap();
+        let current_node = &registry.visit_ast(&self.fulltype).unwrap();
 
         if self.is_iterish() && to > 0 {
             // This executable is iterable member
@@ -86,18 +87,18 @@ impl<'a> Executable<'a> {
             }
         }
     }
-    pub fn children(&'a self, to: usize, registry: &'a mut Registry<'a>) -> (&'a mut Registry<'a>, Vec<Executable<'a>>) {
+    pub fn children(&self, to: usize, registry: &mut Registry) -> Vec<Executable> {
         let mut children = Vec::new();
         let labels = self.labels(to, registry);
         for i in 0..labels.len() {
-            let current_node = registry.visitAST(&labels[i]).unwrap();
+            let current_node = registry.visit_ast(&labels[i]).unwrap();
             let fulltype = current_node.get("type").unwrap().to_string();
             let parsed_type = ASTNode::parse_type_str(&fulltype.clone());
             let new_executable = Executable::new(
                 current_node.get("astId").unwrap().as_u64().unwrap() as usize, // astId
                 current_node.get("label").unwrap().to_string(), // label of the current node
                 fulltype.clone(), // fulltype
-                Some(&self), // set the belongs_to to the current executable
+                self.belongs_to.clone(), // set the belongs_to to the current executable
                 ASTNode::type_kind(&fulltype.clone()), // type kind of the current node
                 parsed_type.value_type, // type of the current node
                 current_node.get("offset").unwrap().as_u64().unwrap() as usize, // offset of the current node
@@ -111,7 +112,7 @@ impl<'a> Executable<'a> {
             );
             children.push(new_executable);
         };
-        (&mut registry, children)
+        children
     }
  
 
@@ -132,7 +133,7 @@ impl<'a> Executable<'a> {
     }
     
     pub fn calculate_absolute_slot(&self, registry: &Registry) -> String {
-        match self.belongs_to {
+        match &self.belongs_to {
             Some(belongs_to) => {
                 match registry.absolute_slots.get(&belongs_to.id) {
                     Some(belongs_to_absolute_slot) => {

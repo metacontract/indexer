@@ -27,7 +27,7 @@ pub struct Executor;
 impl Executor {
 
     #[allow(unused_mut)]
-    pub async fn bulk_exec_and_reload<'a>(step: usize, mut context: Context<'a>) -> Result<(), Box<dyn Error>> {
+    pub async fn bulk_exec_and_reload(step: usize, mut context: Context) -> Result<(), Box<dyn Error>> {
 
         let mut absolute_slots: HashMap<usize, String> = HashMap::new();
         let mut primitives: HashMap<usize, Executable> = HashMap::new();

@@ -1,86 +1,24 @@
    Compiling mc-indexer-extractor v0.1.0 (/Users/bob/code/indexer/crates/extractor)
-error[E0596]: cannot borrow `self_returned` as mutable, as it is not declared as mutable
-  --> src/registry.rs:93:9
+warning: unused implementer of `Future` that must be used
+  --> src/main.rs:45:5
    |
-93 |         &mut self_returned
-   |         ^^^^^^^^^^^^^^^^^^ cannot borrow as mutable
+45 |     extractor.listen();
+   |     ^^^^^^^^^^^^^^^^^^
    |
-note: the binding is already a mutable borrow
-  --> src/registry.rs:91:14
+   = note: futures do nothing unless you `.await` or poll them
+   = note: `#[warn(unused_must_use)]` on by default
+
+warning: unused implementer of `Future` that must be used
+  --> src/extractor.rs:73:9
    |
-91 |         let (self_returned, children) = executable.children(to, self);
-   |              ^^^^^^^^^^^^^
-help: try removing `&mut` here
+73 |         self.scan_contract();
+   |         ^^^^^^^^^^^^^^^^^^^^
    |
-93 -         &mut self_returned
-93 +         self_returned
-   |
+   = note: futures do nothing unless you `.await` or poll them
 
-error[E0499]: cannot borrow `*self` as mutable more than once at a time
-   --> src/registry.rs:100:13
-    |
-29  | impl<'a> Registry<'a> {
-    |      -- lifetime `'a` defined here
-...
-100 |             self.enqueue_children_execution(step, e);
-    |             ^^^^------------------------------------
-    |             |
-    |             `*self` was mutably borrowed here in the previous iteration of the loop
-    |             argument requires that `*self` is borrowed for `'a`
-
-error: lifetime may not live long enough
-   --> src/registry.rs:100:13
-    |
-29  | impl<'a> Registry<'a> {
-    |      -- lifetime `'a` defined here
-...
-95  |     pub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut ...
-    |                                                - let's call the lifetime of this reference `'1`
-...
-100 |             self.enqueue_children_execution(step, e);
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ argument requires that `'1` must outlive `'a`
-
-error[E0621]: explicit lifetime required in the type of `filled_queueable_iterish`
-   --> src/registry.rs:100:13
-    |
-95  | ...ub fn bulk_enqueue_children_execution<'b>(&mut self, step:usize, filled_queueable_iterish: &HashMap<usize, Executable<'b>>) -> &mut Self
-    |                                                                                               ------------------------------- help: add explicit lifetime `'a` to the type of `filled_queueable_iterish`: `&'a HashMap<usize, Executable<'b>>`
-...
-100 | ...       self.enqueue_children_execution(step, e);
-    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ lifetime `'a` required
-
-error[E0499]: cannot borrow `*self` as mutable more than once at a time
-   --> src/registry.rs:102:9
-    |
-29  | impl<'a> Registry<'a> {
-    |      -- lifetime `'a` defined here
-...
-100 |             self.enqueue_children_execution(step, e);
-    |             ----------------------------------------
-    |             |
-    |             first mutable borrow occurs here
-    |             argument requires that `*self` is borrowed for `'a`
-101 |         };
-102 |         self
-    |         ^^^^ second mutable borrow occurs here
-
-error[E0596]: cannot borrow `registry` as mutable, as it is not declared as mutable
-   --> src/executable.rs:114:10
-    |
-114 |         (&mut registry, children)
-    |          ^^^^^^^^^^^^^ cannot borrow as mutable
-    |
-note: the binding is already a mutable borrow
-   --> src/executable.rs:89:52
-    |
-89  |     pub fn children(&'a self, to: usize, registry: &'a mut Registry<'a>) -> (&'a mut Registry<'a>, Vec<Executable<'a>>) {
-    |                                                    ^^^^^^^^^^^^^^^^^^^^
-help: try removing `&mut` here
-    |
-114 -         (&mut registry, children)
-114 +         (registry, children)
-    |
-
-Some errors have detailed explanations: E0499, E0596, E0621.
-For more information about an error, try `rustc --explain E0499`.
-error: could not compile `mc-indexer-extractor` (bin "mc-indexer-extractor") due to 6 previous errors
+warning: `mc-indexer-extractor` (bin "mc-indexer-extractor") generated 2 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.97s
+     Running `target/debug/mc-indexer-extractor`
+thread 'main' panicked at src/main.rs:35:65:
+called `Result::unwrap()` on an `Err` value: Error("EOF while parsing a value", line: 1, column: 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
