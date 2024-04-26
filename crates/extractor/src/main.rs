@@ -36,12 +36,13 @@ use std::env;
 
 fn main() {
     dotenv::dotenv().ok();
-    let mut compiler = Compiler::new("solc".to_string());
+    let project_root = env::current_dir().unwrap();
+    let mut compiler = Compiler::new("solc".to_string(), project_root.clone());
 
     let identifier = env::var("REPO_IDENTIFIER").unwrap();
     let bundle = env::var("BUNDLE_NAME").unwrap();
 
-    let mc_repo_fetcher = MCRepoFetcher::new(identifier, bundle);
+    let mc_repo_fetcher = MCRepoFetcher::new(identifier, bundle, Some(project_root.clone()));
     mc_repo_fetcher.clone_repo().unwrap();
     mc_repo_fetcher.gen_standard_json_input().unwrap();
     let storage_layout_blob = compiler.prepare_storage_layout().unwrap();

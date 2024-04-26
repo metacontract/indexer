@@ -8,28 +8,49 @@ use std::fs;
 use std::error::Error;
 use std::env;
 use std::path::PathBuf;
+use std::path::Path;
 
+
+#[allow(unused)]
 pub struct MCRepoFetcher {
     pub url: String,
+    pub base_path: PathBuf,
+    pub identifier: String,
+    pub bundle: String,
     pub local_repo_path: PathBuf,
     pub schema_path: PathBuf,
     pub dummy_path: PathBuf,
-    pub standard_json_input_path: PathBuf,
+    pub standard_json_input_layout_sample_path: PathBuf,
+    pub standard_json_input_layout_path: PathBuf,
+    pub standard_json_input_baseslots_sample_path: PathBuf,
+    pub standard_json_input_baseslots_path: PathBuf,
 }
 
 impl MCRepoFetcher {
-    pub fn new(identifier: String, bundle: String) -> Self {
-        let local_repo_path = PathBuf::from(format!(".repo/{}", identifier));
-        let schema_path = local_repo_path.join(format!("src/{}/storages/Schema.sol", bundle));
-        let dummy_path = local_repo_path.join(format!("src/{}/storages/Dummy.sol", bundle));
-        let standard_json_input_path = PathBuf::from(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_PATH").unwrap_or_else(|_| "./standard_json_input_layout_sample.json".to_string()));
+    pub fn new(identifier: String, bundle: String, base_path: Option<PathBuf>) -> Self {
+        let _base_path = base_path.unwrap_or_else(|| env::current_dir().unwrap() );
+        let local_repo_path = _base_path.join(format!("{}", env::var("REPO_PATH").unwrap()));
+        let identifier_path = local_repo_path.join(format!("{}", identifier));
+        let storage_path = identifier_path.join(format!("src/{}/storages", bundle));
+        let schema_path = storage_path.join(format!("Schema.sol"));
+        let dummy_path = storage_path.join(format!("Dummy.sol"));
+        let standard_json_input_layout_sample_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap_or_else(|_| "standard_json_input_layout_sample.json".to_string())));
+        let standard_json_input_layout_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap_or_else(|_| "standard_json_input_layout_sample.json".to_string())));
+        let standard_json_input_baseslots_sample_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap_or_else(|_| "standard_json_input_baseslots_sample.json".to_string())));
+        let standard_json_input_baseslots_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap_or_else(|_| "standard_json_input_baseslots.json".to_string())));
 
         Self {
             url: format!("https://github.com/{}.git", identifier),
+            base_path: _base_path,
+            identifier,
+            bundle,
             local_repo_path,
             schema_path,
             dummy_path,
-            standard_json_input_path,
+            standard_json_input_layout_sample_path,
+            standard_json_input_layout_path,
+            standard_json_input_baseslots_sample_path,
+            standard_json_input_baseslots_path,
         }
     }
 
@@ -48,21 +69,37 @@ impl MCRepoFetcher {
     }
 
     pub fn gen_standard_json_input(&self) -> Result<(), Box<dyn Error>> {
-        let sample_json_content = fs::read_to_string(&self.standard_json_input_path)?;
-        let mut sample_json: serde_json::Value = serde_json::from_str(&sample_json_content)?;
-        sample_json["sources"] = serde_json::json!({
-            self.schema_path.to_str().unwrap(): {
-                "urls": [self.schema_path.to_str().unwrap()]
-            },
-            self.dummy_path.to_str().unwrap(): {
-                "urls": [self.dummy_path.to_str().unwrap()]
-            }
-        });
-
-        let output_json_path = self.standard_json_input_path.with_file_name("standard_json_input_layout.json");
-        fs::write(&output_json_path, serde_json::to_string_pretty(&sample_json)?)?;
-
-        println!("Generated standard_json_input_layout.json");
+        if self.standard_json_input_layout_sample_path.exists() {
+            match fs::read_to_string(&self.standard_json_input_layout_sample_path) {
+                Ok(content) => {
+                    let mut sample_json: serde_json::Value = serde_json::from_str(&content)?;
+                    sample_json["sources"] = serde_json::json!({
+                        self.schema_path.to_str().unwrap(): {
+                            "urls": [self.schema_path.to_str().unwrap()]
+                        },
+                        self.dummy_path.to_str().unwrap(): {
+                            "urls": [self.dummy_path.to_str().unwrap()]
+                        }
+                    });
+            
+                    let output_json_path: &std::path::Path = self.standard_json_input_layout_path.as_ref();
+                    
+                    match fs::write(output_json_path, serde_json::to_string_pretty(&sample_json)?) {
+                        Ok(_) => {
+                            println!("Generated standard_json_input_layout.json");
+                        },
+                        Err(err) => {
+                            panic!("Error writing standard_json_input_layout_path: {}", err);
+                        }
+                    }
+                },
+                Err(err) => {
+                    panic!("Error reading standard_json_input_layout_sample_path: {}", err);
+                }
+            };
+        } else {
+            panic!("standard_json_input_layout_sample_path({}) isn't exist.", self.standard_json_input_layout_sample_path.to_str().unwrap());            
+        }
         Ok(())
     }
 }
@@ -70,58 +107,59 @@ impl MCRepoFetcher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
+    use tempfile::{tempdir, TempDir};
 
-    
-
-    #[test]
-    fn test_new() {
+    fn initialize() -> MCRepoFetcher {
         dotenv::dotenv().ok();
+
+        let tempdir = tempdir().unwrap();
+        let pathbuf_temppath = tempdir.into_path();
 
         let identifier = env::var("REPO_IDENTIFIER").unwrap();
         let bundle = env::var("BUNDLE_NAME").unwrap();
-        let fetcher = MCRepoFetcher::new(identifier.clone(), bundle.clone());
 
-        assert_eq!(fetcher.url, format!("https://github.com/{}.git", identifier));
-        assert_eq!(fetcher.local_repo_path, PathBuf::from(format!(".repo/{}", identifier)));
-        assert_eq!(fetcher.schema_path, PathBuf::from(format!(".repo/{}/src/{}/storages/Schema.sol", identifier, bundle)));
-        assert_eq!(fetcher.dummy_path, PathBuf::from(format!(".repo/{}/src/{}/storages/Dummy.sol", identifier, bundle)));
+        let fetcher = MCRepoFetcher::new(identifier.clone(), bundle.clone(), Some(pathbuf_temppath));
+
+
+        if let Err(_err) = std::fs::remove_dir_all(&fetcher.local_repo_path) {
+            
+        }
+
+        fetcher
+    }    
+
+    #[test]
+    fn test_new() {
+        let fetcher = initialize();
+    
+        assert_eq!(fetcher.url, format!("https://github.com/{}.git", fetcher.identifier));
+        assert_eq!(fetcher.local_repo_path, fetcher.base_path.join(format!(".repo")));
+        assert_eq!(fetcher.schema_path, fetcher.base_path.join(format!(".repo/{}/src/{}/storages/Schema.sol", fetcher.identifier, fetcher.bundle)));
+        assert_eq!(fetcher.dummy_path, fetcher.base_path.join(format!(".repo/{}/src/{}/storages/Dummy.sol", fetcher.identifier, fetcher.bundle)));
     }
 
     #[test]
     fn test_clone_repo() {
-        dotenv::dotenv().ok();
-
-        let identifier = env::var("REPO_IDENTIFIER").unwrap();
-        let bundle = env::var("BUNDLE_NAME").unwrap();
-        let fetcher = MCRepoFetcher::new(identifier.clone(), bundle.clone());
+        let fetcher = initialize();
     
         fetcher.clone_repo().unwrap();
     
         assert!(fetcher.local_repo_path.join(".git").exists());
-        assert!(fetcher.local_repo_path.join("src").join(bundle.clone()).join("storages").join("Schema.sol").exists());
-        assert!(fetcher.local_repo_path.join("src").join(bundle.clone()).join("storages").join("Dummy.sol").exists());
+        assert!(fetcher.local_repo_path.join("src").join(fetcher.bundle.clone()).join("storages").join("Schema.sol").exists());
+        assert!(fetcher.local_repo_path.join("src").join(fetcher.bundle.clone()).join("storages").join("Dummy.sol").exists());
     }
 
     #[test]
     fn test_gen_standard_json_input() {
-        dotenv::dotenv().ok();
+        let fetcher = initialize();
 
-        let temp_dir = tempdir().unwrap();
-        let standard_json_input_path = temp_dir.path().join("standard_json_input_layout_sample.json");
-        fs::write(&standard_json_input_path, r#"{"sources": {}}"#).unwrap();
-
-        let fetcher = MCRepoFetcher {
-            url: "".to_string(),
-            local_repo_path: temp_dir.path().to_path_buf(),
-            schema_path: temp_dir.path().join("src/test_bundle/storages/Schema.sol"),
-            dummy_path: temp_dir.path().join("src/test_bundle/storages/Dummy.sol"),
-            standard_json_input_path,
-        };
+        let copy_source = env::current_dir().unwrap().join(".repo/standard_json_input_layout_sample.json");
+        fs::copy(copy_source, &fetcher.local_repo_path).unwrap();
+        println!("{:?}", fetcher.standard_json_input_layout_sample_path.exists());
 
         fetcher.gen_standard_json_input().unwrap();
 
-        let output_json_path = temp_dir.path().join("standard_json_input_layout.json");
+        let output_json_path = fetcher.local_repo_path.join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
         let output_json_content = fs::read_to_string(&output_json_path).unwrap();
         let output_json: serde_json::Value = serde_json::from_str(&output_json_content).unwrap();
 

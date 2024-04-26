@@ -20,17 +20,19 @@ use std::path::PathBuf;
 
 pub struct Compiler {
     solc_path: String,
+    base_path_buf: PathBuf,
 }
 
 impl Compiler {
-    pub fn new(solc_path: String) -> Self {
+    pub fn new(solc_path: String, base_path_buf: PathBuf) -> Self {
         Self {
             solc_path,
+            base_path_buf,
         }
     }
 
     pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let standard_json_input_path = PathBuf::from(env::var("STANDARD_JSON_INPUT_BASESLOTS_PATH").unwrap());
+        let standard_json_input_path = self.base_path_buf.join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
 
         let output = Command::new(&self.solc_path)
             .arg("--standard-json")
@@ -44,7 +46,8 @@ impl Compiler {
     }
 
     pub fn prepare_storage_layout(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let standard_json_input_path = PathBuf::from(env::var("STANDARD_JSON_INPUT_LAYOUT_PATH").unwrap());
+        let standard_json_input_path = self.base_path_buf.join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
+
         let output = Command::new(&self.solc_path)
             .arg("--standard-json")
             .arg(standard_json_input_path)
@@ -73,10 +76,13 @@ mod tests {
         fn test_prepare_storage_layout() {
             dotenv::dotenv().ok();
 
-            let mc_repo_fetcher = MCRepoFetcher::new(env::var("REPO_IDENTIFIER").unwrap(), env::var("BUNDLE_NAME").unwrap());
-            mc_repo_fetcher.clone_repo().unwrap();
+            let tempdir = tempdir().unwrap();
+            let pathbuf_temppath = tempdir.into_path();
 
-            let mut compiler = Compiler::new("solc".to_string());
+            let fetcher = MCRepoFetcher::new(env::var("REPO_IDENTIFIER").unwrap(), env::var("BUNDLE_NAME").unwrap(), Some(pathbuf_temppath.clone()));
+            fetcher.clone_repo().unwrap();
+
+            let mut compiler = Compiler::new("solc".to_string(), pathbuf_temppath.clone());
             let storage_layout_blob = match compiler.prepare_storage_layout() {
                 Ok(blob) => blob,
                 Err(err) => {
