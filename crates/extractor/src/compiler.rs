@@ -115,7 +115,15 @@ mod tests {
         };
 
         println!("{:?}", storage_layout_blob);
-        assert!(storage_layout_blob["contracts"][&fetcher.dummy_path.to_str().unwrap()]["Dummy"]["storageLayout"]["types"].is_object());
+
+        let types = storage_layout_blob
+                                .get("contracts").unwrap()
+                                .get(&format!("src/{}/storages/Dummy.sol", fetcher.bundle.clone())).unwrap()
+                                .get("Dummy").unwrap()
+                                .get("storageLayout").unwrap()
+                                .get("types").unwrap();
+
+        assert!(types.is_object());
     }
 
 }
