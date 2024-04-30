@@ -33,19 +33,6 @@ impl Compiler {
         }
     }
 
-    pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let standard_json_input_path = self.base_path.join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
-
-        let output = Command::new(&self.solc_path)
-            .arg("--standard-json")
-            .arg(standard_json_input_path)
-            .output()?;
-
-        let stdout = String::from_utf8(output.stdout)?;
-        let parsed: Value = serde_json::from_str(&stdout)?;
-
-        Ok(parsed)
-    }
 
     pub fn prepare_storage_layout(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
         let standard_json_input_path = self.base_path.join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
@@ -77,6 +64,49 @@ impl Compiler {
             }
     }
 
+    pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
+        let standard_json_input_path = self.base_path.join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
+
+        let output = Command::new(&self.solc_path)
+            .arg("--standard-json")
+            .arg(standard_json_input_path.clone())
+            .arg("--allow-paths")
+            .arg(self.base_path.clone())
+            .arg("--base-path")
+            .arg(self.local_repo_path.clone())
+            .output()?;
+
+        let stdout = String::from_utf8(output.stdout)?;
+        let parsed: Value = serde_json::from_str(&stdout)?;
+
+        Ok(parsed)
+    }
+
+    #[allow(dead_code)]
+    pub fn get_slots(bytecode: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+        let mut baseslots_raw = Vec::new();
+        let specifier = "5f1b81565b7f";
+        let mut i = 0;
+        let signature_size = 12;
+        let padding = 76;
+        while i < bytecode.len() - signature_size {
+            if &bytecode[i..i+signature_size] == specifier {
+                let slot_value = &bytecode[i+signature_size..i+padding];
+                baseslots_raw.push(slot_value);
+                i += padding;
+            } else {
+                i += 2;
+            }
+        }
+        if baseslots_raw.len() == 0 {
+            panic!("baseslots are not detected in Constants.sol");
+        }
+        let mut baseslots = Vec::new();
+        for slot in baseslots_raw {
+            baseslots.push(format!("0x{}", slot));
+        }
+        Ok(baseslots)       
+    }
 
 }
 
@@ -102,6 +132,10 @@ mod tests {
             let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
         }
+        if !fetcher.standard_json_input_baseslots_path.exists() {
+            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap()));
+            fs::copy(copy_source.clone(), &fetcher.standard_json_input_baseslots_path).unwrap();    
+        }
 
         fetcher.clone_repo().unwrap();
         fetcher.gen_standard_json_input().unwrap();
@@ -114,8 +148,6 @@ mod tests {
             }
         };
 
-        println!("{:?}", storage_layout_blob);
-
         let types = storage_layout_blob
                                 .get("contracts").unwrap()
                                 .get(&format!("src/{}/storages/Dummy.sol", fetcher.bundle.clone())).unwrap()
@@ -126,4 +158,54 @@ mod tests {
         assert!(types.is_object());
     }
 
+    #[test]
+    fn test_prepare_base_slots() {
+        dotenv::dotenv().ok();
+
+        let tempdir = tempdir().unwrap();
+        let pathbuf_temppath = tempdir.into_path();
+
+        let fetcher = MCRepoFetcher::new(env::var("REPO_IDENTIFIER").unwrap(), env::var("BUNDLE_NAME").unwrap(), Some(pathbuf_temppath.clone()));
+
+        if !fetcher.local_repo_path.exists() {
+            std::fs::create_dir_all(fetcher.local_repo_path.clone()).unwrap();
+        }
+        if !fetcher.standard_json_input_layout_path.exists() {
+            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
+            fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
+        }
+        if !fetcher.standard_json_input_baseslots_path.exists() {
+            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap()));
+            fs::copy(copy_source.clone(), &fetcher.standard_json_input_baseslots_path).unwrap();    
+        }
+
+        fetcher.clone_repo().unwrap();
+        fetcher.gen_standard_json_input().unwrap();
+
+        let mut compiler = Compiler::new("solc".to_string(), fetcher.local_repo_path.clone(), fetcher.identifier.clone());
+        let baseslots_blob = match compiler.prepare_base_slots() {
+            Ok(blob) => blob,
+            Err(err) => {
+                panic!("Error preparing baseslots: {}", err);
+            }
+        };
+
+        let bytecode = baseslots_blob
+                                .get("contracts").unwrap()
+                                .get(&format!("src/{}/storages/Constants.sol", fetcher.bundle.clone())).unwrap()
+                                .get("Constants").unwrap()
+                                .get("evm").unwrap()
+                                .get("deployedBytecode").unwrap()
+                                .get("object").unwrap()
+                                .as_str()
+                                .expect("Failed to extract bytecode");
+
+        let baseslots = match Compiler::get_slots(&bytecode) {
+            Ok(baseslots) => baseslots,
+            Err(err) => panic!("{}", err)
+        };
+
+        assert!(baseslots.len() > 0);
+
+    }
 }

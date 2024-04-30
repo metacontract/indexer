@@ -93,6 +93,28 @@ impl MCRepoFetcher {
         } else {
             panic!("standard_json_input_layout_path({}) isn't exist.", self.standard_json_input_layout_path.to_str().unwrap());            
         }
+        if self.standard_json_input_baseslots_path.exists() {
+            match fs::read_to_string(&self.standard_json_input_baseslots_path) {
+                Ok(content) => {
+                    let sample_json: serde_json::Value = serde_json::from_str(&content)?;
+                    let output_json_path: &std::path::Path = self.standard_json_input_baseslots_path.as_ref();
+                    
+                    match fs::write(output_json_path, serde_json::to_string_pretty(&sample_json)?) {
+                        Ok(_) => {
+                            println!("Generated standard_json_input_baseslots.json");
+                        },
+                        Err(err) => {
+                            panic!("Error writing standard_json_input_baseslots_path: {}", err);
+                        }
+                    }
+                },
+                Err(err) => {
+                    panic!("Error reading standard_json_input_baseslots_path: {}", err);
+                }
+            };
+        } else {
+            panic!("standard_json_input_baseslots_path({}) isn't exist.", self.standard_json_input_baseslots_path.to_str().unwrap());            
+        }
         Ok(())
     }
 }
@@ -152,6 +174,10 @@ mod tests {
         if !fetcher.standard_json_input_layout_path.exists() {
             let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
+        }
+        if !fetcher.standard_json_input_baseslots_path.exists() {
+            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap()));
+            fs::copy(copy_source.clone(), &fetcher.standard_json_input_baseslots_path).unwrap();    
         }
 
         fetcher.gen_standard_json_input().unwrap();
