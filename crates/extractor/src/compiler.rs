@@ -28,14 +28,23 @@ impl Compiler {
     pub fn new(solc_path: String, base_path: PathBuf, identifier: String) -> Self {
         Self {
             solc_path,
-            base_path: base_path.clone(),
-            local_repo_path: base_path.clone().join(identifier),
+            base_path: base_path
+                .join(env::var("REPO_PATH").unwrap())
+                .clone(),
+            local_repo_path: base_path
+                .join(env::var("REPO_PATH").unwrap())
+                .join(identifier)
+                .clone(),
         }
     }
 
 
     pub fn prepare_storage_layout(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let standard_json_input_path = self.base_path.join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
+        let standard_json_input_path = self.base_path
+                                                        // .join(env::var("REPO_PATH").unwrap())
+                                                        .join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
+
+        println!("{:?} {:?}", self.local_repo_path.clone(), self.local_repo_path.clone().exists());
 
         match Command::new(&self.solc_path)
             .arg("--standard-json")
@@ -47,7 +56,9 @@ impl Compiler {
             .output() {
                 Ok(output)=>{
                     let stdout = String::from_utf8(output.stdout)?;
-                    println!("standard_json_input_path:{:?}", standard_json_input_path.clone());
+                    if stdout.len() == 0 {
+                        panic!("solc compilation for storage layout generated null result.");
+                    }
 
                     match serde_json::from_str(&stdout) {
                         Ok(parsed)=>{
@@ -65,7 +76,9 @@ impl Compiler {
     }
 
     pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
-        let standard_json_input_path = self.base_path.join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
+        let standard_json_input_path = self.base_path
+                                                        // .join(env::var("REPO_PATH").unwrap())
+                                                        .join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
 
         let output = Command::new(&self.solc_path)
             .arg("--standard-json")
@@ -77,6 +90,10 @@ impl Compiler {
             .output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
+        if stdout.len() == 0 {
+            panic!("solc compilation for baseslots generated null result.");
+        }
+
         let parsed: Value = serde_json::from_str(&stdout)?;
 
         Ok(parsed)
@@ -140,7 +157,7 @@ mod tests {
         fetcher.clone_repo().unwrap();
         fetcher.gen_standard_json_input().unwrap();
 
-        let mut compiler = Compiler::new("solc".to_string(), fetcher.local_repo_path.clone(), fetcher.identifier.clone());
+        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone());
         let storage_layout_blob = match compiler.prepare_storage_layout() {
             Ok(blob) => blob,
             Err(err) => {
@@ -182,7 +199,7 @@ mod tests {
         fetcher.clone_repo().unwrap();
         fetcher.gen_standard_json_input().unwrap();
 
-        let mut compiler = Compiler::new("solc".to_string(), fetcher.local_repo_path.clone(), fetcher.identifier.clone());
+        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone());
         let baseslots_blob = match compiler.prepare_base_slots() {
             Ok(blob) => blob,
             Err(err) => {
