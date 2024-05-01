@@ -37,7 +37,7 @@ impl Extractor {
         }
     }
 
-    pub fn init_members_from_compiler(&mut self, base_slots: &Vec<String>) {
+    pub fn init_members_from_compiler(&mut self, base_slots: &HashMap<String,String>) {
         println!("{:?} {:?}", base_slots, &self.state.context.registry.types);
 
         // Create Member objects from base_slots and storage_layout

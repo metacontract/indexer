@@ -16,6 +16,7 @@ use std::process::Command;
 use serde_json::Value;
 use std::env;
 use std::path::PathBuf;
+use regex::Regex;
 
 pub struct Compiler {
     bundle: String,
@@ -76,70 +77,21 @@ impl Compiler {
             }
     }
 
-    pub fn prepare_base_slots(&mut self) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        let standard_json_input_path = self.base_path
-                                                        // .join(env::var("REPO_PATH").unwrap())
-                                                        .join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
+    pub fn prepare_base_slots(&mut self) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
+        let filename = format!("{}/src/{}/storages/BaseSlots.sol", self.local_repo_path.to_string_lossy(), self.bundle);
+        let code = std::fs::read_to_string(filename).unwrap();
 
-        let output = Command::new(&self.solc_path)
-            .arg("--standard-json")
-            .arg(standard_json_input_path.clone())
-            .arg("--allow-paths")
-            .arg(self.base_path.clone())
-            .arg("--base-path")
-            .arg(self.local_repo_path.clone())
-            // .arg("--devdoc")
-            .output()?;
+        let re = Regex::new(r"baseslot_([A-Z][A-Za-z0-9]+)\s*=\s*(0x[a-fA-F0-9]{64})").unwrap();
 
-        let stdout = String::from_utf8(output.stdout)?;
-        if stdout.len() == 0 {
-            panic!("solc compilation for baseslots generated null result.");
+        let mut baseslot_data = HashMap::new();
+    
+        for capture in re.captures_iter(&code) {
+            let variable_name = capture[1].to_string();
+            let data = capture[2].to_string();
+            baseslot_data.insert(variable_name, data);
         }
 
-        let baseslots_blob: Value = serde_json::from_str(&stdout)?;
-
-        let bytecode = baseslots_blob
-                                .get("contracts").unwrap()
-                                .get(&format!("src/{}/storages/BaseSlots.sol", self.bundle.clone())).unwrap()
-                                .get("BaseSlots").unwrap()
-                                .get("evm").unwrap()
-                                .get("deployedBytecode").unwrap()
-                                .get("object").unwrap()
-                                .as_str()
-                                .expect("Failed to extract bytecode");
-
-        let baseslots = match Compiler::get_slots(&bytecode) {
-            Ok(baseslots) => baseslots,
-            Err(err) => panic!("{}", err)
-        };
-
-        Ok(baseslots)
-    }
-
-    #[allow(dead_code)]
-    pub fn get_slots(bytecode: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        let mut baseslots_raw = Vec::new();
-        let specifier = "5f1b81565b7f";
-        let mut i = 0;
-        let signature_size = 12;
-        let padding = 76;
-        while i < bytecode.len() - signature_size {
-            if &bytecode[i..i+signature_size] == specifier {
-                let slot_value = &bytecode[i+signature_size..i+padding];
-                baseslots_raw.push(slot_value);
-                i += padding;
-            } else {
-                i += 2;
-            }
-        }
-        if baseslots_raw.len() == 0 {
-            panic!("baseslots are not detected in BaseSlots.sol");
-        }
-        let mut baseslots = Vec::new();
-        for slot in baseslots_raw {
-            baseslots.push(format!("0x{}", slot));
-        }
-        Ok(baseslots)       
+        Ok(baseslot_data)
     }
 
 }
@@ -165,10 +117,6 @@ mod tests {
         if !fetcher.standard_json_input_layout_path.exists() {
             let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
-        }
-        if !fetcher.standard_json_input_baseslots_path.exists() {
-            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap()));
-            fs::copy(copy_source.clone(), &fetcher.standard_json_input_baseslots_path).unwrap();    
         }
 
         fetcher.clone_repo().unwrap();
@@ -207,10 +155,6 @@ mod tests {
         if !fetcher.standard_json_input_layout_path.exists() {
             let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
-        }
-        if !fetcher.standard_json_input_baseslots_path.exists() {
-            let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_BASESLOTS_SAMPLE_NAME").unwrap()));
-            fs::copy(copy_source.clone(), &fetcher.standard_json_input_baseslots_path).unwrap();    
         }
 
         fetcher.clone_repo().unwrap();
