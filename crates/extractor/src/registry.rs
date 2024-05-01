@@ -85,13 +85,8 @@ impl Registry {
     {
         let mut _self = self;
         {
-            let (_, to) = match _self.iterish_from_to.get(&executable.id) {
-                Some((from, to)) => (*from, *to),
-                None => {
-                    panic!("No from/to values found for executable with ID: {}", executable.id);
-                }
-            };
-            let children = executable.children(to, _self);
+            let from_to = _self.iterish_from_to.get(&executable.id);
+            let children = executable.children(&_self.clone(), from_to.clone());
             _self.queue_per_step.insert(step, children);
             _self
         }
@@ -119,8 +114,8 @@ impl Registry {
         self.perf_config_items.get(&id)
     }
 
-    pub fn visit_ast(&self, label: &str) -> Option<Value> {
-        return self.types.get(label).cloned();
+    pub fn visit_ast(&self, fulltype: &str) -> Option<Value> {
+        return self.types.get(fulltype).cloned();
     }
 
 

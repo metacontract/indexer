@@ -64,6 +64,29 @@ impl MCRepoFetcher {
         Ok(())
     }
 
+    pub fn gen_dummy_contract(&self, base_slots: &Vec<String>) -> Result<(), Box<dyn Error>> {
+        let mut dummy_contract = String::new();
+        dummy_contract.push_str("// SPDX-License-Identifier: MIT\n");
+        dummy_contract.push_str("pragma solidity ^0.8.24;\n\n");
+        dummy_contract.push_str("import { Schema } from \"bundle/");
+        dummy_contract.push_str(&self.bundle);
+        dummy_contract.push_str("/storages/Schema.sol\";\n\n");
+        dummy_contract.push_str("contract Dummy {\n");
+
+        for slot in base_slots {
+            dummy_contract.push_str("    Schema.");
+            dummy_contract.push_str(slot);
+            dummy_contract.push_str(" $");
+            dummy_contract.push_str(&slot.to_lowercase());
+            dummy_contract.push_str(";\n");
+        }
+
+        dummy_contract.push_str("}\n");
+
+        std::fs::write(&self.dummy_path, dummy_contract)?;
+        Ok(())
+    }
+
     pub fn gen_standard_json_input(&self) -> Result<(), Box<dyn Error>> {
         if self.standard_json_input_layout_path.exists() {
             match fs::read_to_string(&self.standard_json_input_layout_path) {
@@ -133,7 +156,7 @@ mod tests {
     
         assert!(fetcher.identifier_path.join(".git").exists());
         assert!(fetcher.identifier_path.join("src").join(fetcher.bundle.clone()).join("storages").join("Schema.sol").exists());
-        assert!(fetcher.identifier_path.join("src").join(fetcher.bundle.clone()).join("storages").join("Dummy.sol").exists());
+        assert!(!fetcher.identifier_path.join("src").join(fetcher.bundle.clone()).join("storages").join("Dummy.sol").exists());
     }
 
     #[test]

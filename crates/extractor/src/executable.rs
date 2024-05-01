@@ -67,7 +67,12 @@ impl Executable {
         self.type_kind.is_iterish()
     }
 
-    pub fn labels(&self, to:usize, registry: &Registry) -> Vec<String> {
+    pub fn member_fulltypes(&self, from_to:Option<&(usize, usize)>, registry: &Registry) -> Vec<String> {
+        let to = match from_to {
+            Some((_, to)) => to.clone(),
+            None => 0
+        };
+
         let current_node = &registry.visit_ast(&self.fulltype).unwrap();
 
         if self.is_iterish() && to > 0 {
@@ -79,24 +84,27 @@ impl Executable {
         } else {
             // Check if the type is a struct
             if self.type_kind == TypeKind::NaiveStruct {
-                // Return all labels (type names) of the members
-                current_node.get("members").unwrap().as_array().unwrap().iter().map(|member| member.as_object().unwrap().get("label").unwrap().as_str().unwrap().to_string()).collect()
+                // Return all member_fulltypes (struct fullname) of the members
+                current_node.get("members").unwrap().as_array().unwrap().iter().map(|member| member.as_object().unwrap().get("type").unwrap().as_str().unwrap().to_string()).collect()
             } else {
                 // Primitive type, throw error
-                panic!("Primitive type, cannot list labels");
+                panic!("Primitive type, cannot list member_fulltypes");
             }
         }
     }
-    pub fn children(&self, to: usize, registry: &mut Registry) -> Vec<Executable> {
+    pub fn children(&self, registry: &Registry, from_to: Option<&(usize, usize)>) -> Vec<Executable> {
         let mut children = Vec::new();
-        let labels = self.labels(to, registry);
-        for i in 0..labels.len() {
-            let current_node = registry.visit_ast(&labels[i]).unwrap();
-            let fulltype = current_node.get("type").unwrap().to_string();
+        let member_fulltypes = self.member_fulltypes(from_to, registry);
+        for i in 0..member_fulltypes.len() {
+            let current_node = registry.visit_ast(&member_fulltypes[i]).unwrap();
+            println!("{:?}", current_node.clone());
+            println!("{:?}", member_fulltypes[i].clone());
+            // let fulltype = current_node.get("type").unwrap().to_string();
+            let fulltype = member_fulltypes[i].clone();
             let parsed_type = ASTNode::parse_type_str(&fulltype.clone());
             let new_executable = Executable::new(
                 current_node.get("astId").unwrap().as_u64().unwrap() as usize, // astId
-                current_node.get("label").unwrap().to_string(), // label of the current node
+                current_node.get("label").unwrap().to_string(), // member_fulltype of the current node
                 fulltype.clone(), // fulltype
                 self.belongs_to.clone(), // set the belongs_to to the current executable
                 ASTNode::type_kind(&fulltype.clone()), // type kind of the current node

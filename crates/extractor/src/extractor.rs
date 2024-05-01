@@ -37,41 +37,51 @@ impl Extractor {
         }
     }
 
-    pub fn init_members_from_compiler(&mut self, base_slots: &HashMap<String,String>) {
-        println!("{:?} {:?}", base_slots, &self.state.context.registry.types);
+    pub fn init_members_from_compiler(&mut self, base_slots_index: &HashMap<String,String>) {
+        let mut base_slots: Vec<(String, Value, String)> = Vec::new();
+        // println!("{:?}", self.state.context.registry.types.clone());
+        for (_type, _value) in self.state.context.registry.types.as_object().unwrap() {
+            for (_baseslot_name, _slot) in base_slots_index {
+                if _type.contains(_baseslot_name) {
+                    base_slots.push((_type.clone(), _value.clone(), _slot.clone()));
+                }
+            }
+        }
+
 
         // Create Member objects from base_slots and storage_layout
-        // let mut i = 9999999999; // to avoid astId conflict
-        // for (name, slot_info) in base_slots.as_object().unwrap() {
-        //     let fulltype = slot_info["type"].as_str().unwrap();
-        //     let type_kind = match fulltype {
-        //         "t_mapping" => TypeKind::Mapping,
-        //         "t_array" => TypeKind::Array,
-        //         "t_struct" => TypeKind::NaiveStruct,
-        //         _ => TypeKind::Primitive,
-        //     };
+        let mut i = 9999999999; // to avoid astId conflict
+        let mut initial_members = HashMap::new();
+        let mut absolute_slots = HashMap::new();
+        for (_type, slot_info, _slot) in base_slots {
+            let label = slot_info["label"].as_str().unwrap();
+            let fulltype = _type;
+            let type_kind = TypeKind::NaiveStruct;
 
-        //     let value_type = slot_info["valueType"].as_str().unwrap().to_string();
-        //     let relative_slot = slot_info["slot"].as_str().unwrap().to_string();
+            let member = Executable::new(
+                i, // astId
+                label.to_string(), // label of the current node
+                String::from(fulltype.clone()), // fulltype
+                None, // Pass self as the belongs_to parameter
+                type_kind,
+                fulltype.clone(),
+                0, // Add the offset parameter
+                0.to_string(),
+                None, // Add the mapping_key parameter
+                None, // Initialize iter as None, it will be populated later if needed
+            );
+            initial_members.insert(i, member.clone());
+            absolute_slots.insert(i, _slot.clone());
+            
 
-        //     let member = Executable::new(
-        //         i, // astId
-        //         name.to_string(), // label of the current node
-        //         String::from(fulltype), // fulltype
-        //         None, // Pass self as the belongs_to parameter
-        //         type_kind,
-        //         value_type,
-        //         0, // Add the offset parameter
-        //         relative_slot,
-        //         None, // Add the mapping_key parameter
-        //         None, // Initialize iter as None, it will be populated later if needed
-        //     );
-        //     self.initial_members.push(member.clone());
-        //     i -= 1;
-        // }
+            i -= 1;
+        }
+        self.state.context.registry.bulk_set_absolute_slots(&absolute_slots); // Note: use it for knowing parent slot
+        self.state.context.registry.bulk_enqueue_children_execution(0, &initial_members); // Note: use it for knowing parent slot
+
     }
     pub async fn listen(&mut self) {
-        self.scan_contract();
+        self.scan_contract().await;
     }
 
 
