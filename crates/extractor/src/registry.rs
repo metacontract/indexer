@@ -27,13 +27,14 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn new(blob:Value, perf_config_items: HashMap<usize, PerfConfigItem>) -> Self {
+    pub fn new(blob:Value, perf_config_items: HashMap<usize, PerfConfigItem>, bundle: String) -> Self {
+
         Self {
             queue_per_step: Vec::new(),
             perf_config_items,
             iterish_from_to: HashMap::new(),
             output_flatten: HashMap::new(),
-            types: blob["contracts"]["src/_utils/Dummy.sol"]["Dummy"]["storageLayout"]["types"].clone(),
+            types: blob["contracts"][format!("src/{}/storages/Dummy.sol", bundle.clone())]["Dummy"]["storageLayout"]["types"].clone(),
             absolute_slots: HashMap::new(),
             values: HashMap::new(),
         }

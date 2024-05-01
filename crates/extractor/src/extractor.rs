@@ -37,37 +37,38 @@ impl Extractor {
         }
     }
 
-    pub fn init_members_from_compiler(&mut self, base_slots: &Value) {
+    pub fn init_members_from_compiler(&mut self, base_slots: &Vec<String>) {
+        println!("{:?} {:?}", base_slots, &self.state.context.registry.types);
 
         // Create Member objects from base_slots and storage_layout
-        let mut i = 9999999999; // to avoid astId conflict
-        for (name, slot_info) in base_slots.as_object().unwrap() {
-            let fulltype = slot_info["type"].as_str().unwrap();
-            let type_kind = match fulltype {
-                "t_mapping" => TypeKind::Mapping,
-                "t_array" => TypeKind::Array,
-                "t_struct" => TypeKind::NaiveStruct,
-                _ => TypeKind::Primitive,
-            };
+        // let mut i = 9999999999; // to avoid astId conflict
+        // for (name, slot_info) in base_slots.as_object().unwrap() {
+        //     let fulltype = slot_info["type"].as_str().unwrap();
+        //     let type_kind = match fulltype {
+        //         "t_mapping" => TypeKind::Mapping,
+        //         "t_array" => TypeKind::Array,
+        //         "t_struct" => TypeKind::NaiveStruct,
+        //         _ => TypeKind::Primitive,
+        //     };
 
-            let value_type = slot_info["valueType"].as_str().unwrap().to_string();
-            let relative_slot = slot_info["slot"].as_str().unwrap().to_string();
+        //     let value_type = slot_info["valueType"].as_str().unwrap().to_string();
+        //     let relative_slot = slot_info["slot"].as_str().unwrap().to_string();
 
-            let member = Executable::new(
-                i, // astId
-                name.to_string(), // label of the current node
-                String::from(fulltype), // fulltype
-                None, // Pass self as the belongs_to parameter
-                type_kind,
-                value_type,
-                0, // Add the offset parameter
-                relative_slot,
-                None, // Add the mapping_key parameter
-                None, // Initialize iter as None, it will be populated later if needed
-            );
-            self.initial_members.push(member.clone());
-            i -= 1;
-        }
+        //     let member = Executable::new(
+        //         i, // astId
+        //         name.to_string(), // label of the current node
+        //         String::from(fulltype), // fulltype
+        //         None, // Pass self as the belongs_to parameter
+        //         type_kind,
+        //         value_type,
+        //         0, // Add the offset parameter
+        //         relative_slot,
+        //         None, // Add the mapping_key parameter
+        //         None, // Initialize iter as None, it will be populated later if needed
+        //     );
+        //     self.initial_members.push(member.clone());
+        //     i -= 1;
+        // }
     }
     pub async fn listen(&mut self) {
         self.scan_contract();

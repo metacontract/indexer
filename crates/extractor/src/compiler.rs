@@ -17,23 +17,24 @@ use serde_json::Value;
 use std::env;
 use std::path::PathBuf;
 
-
 pub struct Compiler {
+    bundle: String,
     solc_path: String,
     base_path: PathBuf,
     local_repo_path: PathBuf,
 }
 
 impl Compiler {
-    pub fn new(solc_path: String, base_path: PathBuf, identifier: String) -> Self {
+    pub fn new(solc_path: String, base_path: PathBuf, identifier: String, bundle:String) -> Self {
         Self {
+            bundle: bundle.clone(),
             solc_path,
             base_path: base_path
                 .join(env::var("REPO_PATH").unwrap())
                 .clone(),
             local_repo_path: base_path
                 .join(env::var("REPO_PATH").unwrap())
-                .join(identifier)
+                .join(identifier.clone())
                 .clone(),
         }
     }
@@ -44,7 +45,6 @@ impl Compiler {
                                                         // .join(env::var("REPO_PATH").unwrap())
                                                         .join(env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap());
 
-        println!("{:?} {:?}", self.local_repo_path.clone(), self.local_repo_path.clone().exists());
 
         match Command::new(&self.solc_path)
             .arg("--standard-json")
@@ -53,6 +53,7 @@ impl Compiler {
             .arg(self.base_path.clone())
             .arg("--base-path")
             .arg(self.local_repo_path.clone())
+            // .arg("--devdoc")
             .output() {
                 Ok(output)=>{
                     let stdout = String::from_utf8(output.stdout)?;
@@ -75,7 +76,7 @@ impl Compiler {
             }
     }
 
-    pub fn prepare_base_slots(&mut self) -> Result<Value, Box<dyn std::error::Error>> {
+    pub fn prepare_base_slots(&mut self) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let standard_json_input_path = self.base_path
                                                         // .join(env::var("REPO_PATH").unwrap())
                                                         .join(env::var("STANDARD_JSON_INPUT_BASESLOTS_NAME").unwrap());
@@ -87,6 +88,7 @@ impl Compiler {
             .arg(self.base_path.clone())
             .arg("--base-path")
             .arg(self.local_repo_path.clone())
+            // .arg("--devdoc")
             .output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
@@ -94,9 +96,24 @@ impl Compiler {
             panic!("solc compilation for baseslots generated null result.");
         }
 
-        let parsed: Value = serde_json::from_str(&stdout)?;
+        let baseslots_blob: Value = serde_json::from_str(&stdout)?;
 
-        Ok(parsed)
+        let bytecode = baseslots_blob
+                                .get("contracts").unwrap()
+                                .get(&format!("src/{}/storages/BaseSlots.sol", self.bundle.clone())).unwrap()
+                                .get("BaseSlots").unwrap()
+                                .get("evm").unwrap()
+                                .get("deployedBytecode").unwrap()
+                                .get("object").unwrap()
+                                .as_str()
+                                .expect("Failed to extract bytecode");
+
+        let baseslots = match Compiler::get_slots(&bytecode) {
+            Ok(baseslots) => baseslots,
+            Err(err) => panic!("{}", err)
+        };
+
+        Ok(baseslots)
     }
 
     #[allow(dead_code)]
@@ -116,7 +133,7 @@ impl Compiler {
             }
         }
         if baseslots_raw.len() == 0 {
-            panic!("baseslots are not detected in Constants.sol");
+            panic!("baseslots are not detected in BaseSlots.sol");
         }
         let mut baseslots = Vec::new();
         for slot in baseslots_raw {
@@ -157,7 +174,7 @@ mod tests {
         fetcher.clone_repo().unwrap();
         fetcher.gen_standard_json_input().unwrap();
 
-        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone());
+        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone(), fetcher.bundle.clone());
         let storage_layout_blob = match compiler.prepare_storage_layout() {
             Ok(blob) => blob,
             Err(err) => {
@@ -199,28 +216,14 @@ mod tests {
         fetcher.clone_repo().unwrap();
         fetcher.gen_standard_json_input().unwrap();
 
-        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone());
-        let baseslots_blob = match compiler.prepare_base_slots() {
+        let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone(), fetcher.bundle.clone());
+        let baseslots = match compiler.prepare_base_slots() {
             Ok(blob) => blob,
             Err(err) => {
                 panic!("Error preparing baseslots: {}", err);
             }
         };
 
-        let bytecode = baseslots_blob
-                                .get("contracts").unwrap()
-                                .get(&format!("src/{}/storages/Constants.sol", fetcher.bundle.clone())).unwrap()
-                                .get("Constants").unwrap()
-                                .get("evm").unwrap()
-                                .get("deployedBytecode").unwrap()
-                                .get("object").unwrap()
-                                .as_str()
-                                .expect("Failed to extract bytecode");
-
-        let baseslots = match Compiler::get_slots(&bytecode) {
-            Ok(baseslots) => baseslots,
-            Err(err) => panic!("{}", err)
-        };
 
         assert!(baseslots.len() > 0);
 

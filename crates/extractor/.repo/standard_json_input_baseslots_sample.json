@@ -1,8 +1,8 @@
 {
     "language": "Solidity",
     "sources": {
-      "src/textDAO/storages/Constants.sol": {
-        "urls": ["src/textDAO/storages/Constants.sol"]
+      "src/textDAO/storages/BaseSlots.sol": {
+        "urls": ["src/textDAO/storages/BaseSlots.sol"]
       }
     },
     "settings": {
