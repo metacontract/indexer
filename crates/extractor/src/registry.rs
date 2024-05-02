@@ -86,7 +86,7 @@ impl Registry {
         let mut _self = self;
         {
             let from_to = _self.iterish_from_to.get(&executable.id);
-            let children = executable.children(&_self.clone(), from_to.clone());
+            let children = executable.children(&_self.clone(), from_to.clone()).unwrap();
             _self.queue_per_step.insert(step, children);
             _self
         }

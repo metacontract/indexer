@@ -17,7 +17,6 @@ use std::cell::RefCell;
 use std::mem;
 
 pub struct Extractor {
-    initial_members: Vec<Executable>,
     state: ExtractorState,
 }
 
@@ -29,7 +28,6 @@ struct ExtractorState {
 impl Extractor {
     pub fn new(context: Context) -> Self {
         Self {
-            initial_members: Vec::new(),
             state: ExtractorState {
                 step: 0,
                 context,

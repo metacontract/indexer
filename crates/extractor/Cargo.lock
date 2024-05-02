@@ -1733,6 +1733,8 @@ dependencies = [
  "dotenv",
  "ethers",
  "git2",
+ "num-bigint",
+ "num-traits",
  "regex",
  "reqwest",
  "serde_json",
