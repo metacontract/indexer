@@ -158,7 +158,8 @@ impl Executable {
                             match &self.mapping_key {
                                 Some(mapping_key) => {
                                     let iterable_absolute_slot = format!("{}{}", mapping_key, belongs_to_absolute_slot.trim_start_matches("0x"));
-                                    hex::encode(ethers::utils::keccak256(iterable_absolute_slot.as_bytes()))
+                                    let hash_combined = hex::encode(ethers::utils::keccak256(iterable_absolute_slot.as_bytes()));
+                                    hash_combined
                                 },
                                 None => {
                                     panic!("No absolute_slot: {}", belongs_to.id);
@@ -201,15 +202,18 @@ impl Executable {
 
         let number_uint = number.trim_start_matches('"').trim_end_matches('"').parse::<usize>()
             .map_err(|e| format!("Failed to parse number: {}", e))?;
-        let value_uint = BigUint::from_bytes_le(&value_array);
+        let value_uint = BigUint::from_bytes_be(&value_array);
         let number_uint = BigUint::from(number_uint);
         let result_uint = value_uint + number_uint;
-    
-        let result_bytes = result_uint.to_bytes_le();
+        let result_bytes = result_uint.to_bytes_be();
         let mut result_array = [0u8; 32];
-        result_array[..result_bytes.len()].copy_from_slice(&result_bytes);
+        result_array[32 - result_bytes.len()..].copy_from_slice(&result_bytes);
     
         let result_hex = hex::encode(result_array);
+
+        if result_hex.len() != 64 {
+            return Err(format!("Invalid result length. Expected 64 characters, got {}", result_hex.len()));
+        }
     
         Ok(result_hex)
     }

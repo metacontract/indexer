@@ -52,7 +52,14 @@ impl EthCall {
             .await?;
 
         let response_body: serde_json::Value = response.json().await?;
-        let result = response_body["result"].as_str().unwrap();
+        let result = match response_body["result"].as_str() {
+            Some(value) => value,
+            None => {
+                // Handle the case when "result" is missing or not a string
+                eprintln!("Unexpected response: {:?}", response_body.get("error").unwrap().get("message").unwrap());
+                return Err("Invalid response format".into());
+            }
+        };
 
         // Parse the result and return the values as a HashMap mapping astId to value
         let mut values: HashMap<usize, String> = HashMap::new();

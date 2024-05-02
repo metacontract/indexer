@@ -20,7 +20,7 @@ pub struct Registry {
     pub queue_per_step: Vec<Vec<Executable>>,
     perf_config_items: HashMap<usize, PerfConfigItem>, // key=ast_id
     pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=ast_id
-    output_flatten: HashMap<usize, Executable>, // key=ast_id
+    pub output_flatten: HashMap<usize, Executable>, // key=ast_id
     pub types: Value, // ast info
     pub absolute_slots: HashMap<usize, String>, // key=step, ast_id
     pub values: HashMap<usize, String>, // key=ast_id

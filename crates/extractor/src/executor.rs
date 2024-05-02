@@ -20,6 +20,7 @@ use std::process::Command;
 use serde_json::Value;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::env;
 
 
 pub struct Executor;
@@ -43,9 +44,19 @@ impl Executor {
         for e in registry.queue_per_step[step].clone() {
             absolute_slots.insert(e.id, e.clone().calculate_absolute_slot(&registry));
         }
+        println!("--->{:?}",  absolute_slots.len());
         registry.bulk_set_absolute_slots(&absolute_slots); // Note: use it for knowing parent slot
+        println!("---<{:?}",  registry.absolute_slots.len());
 
-        let values = EthCall::get_values_by_slots(&absolute_slots, "mainnet", "0x1234567890123456789012345678901234567890", "0x1234567890123456789012345678901234567890").await?;
+        let _contract_addr = match env::var("CONTRACT_ADDR") {
+            Ok(addr) => addr,
+            Err(_) => panic!("{}", "CONTRACT_ADDR was not provided."),
+        };
+        let _contract_code = match env::var("CONTRACT_CODE") {
+            Ok(code) => code,
+            Err(_) => panic!("{}", "CONTRACT_CODE was not provided."),
+        };
+        let values = EthCall::get_values_by_slots(&absolute_slots, "mainnet", &_contract_addr, &_contract_code).await?;
         registry.bulk_save_values(values.clone());
 
 
@@ -72,6 +83,7 @@ impl Executor {
             .bulk_enqueue_execution(step+1, pending_fillable_iterish.clone())
             .bulk_enqueue_children_execution(step+1, &filled_queueable_iterish);
 
+        println!("primitives:{:?}", registry.output_flatten.len());
         Ok(())
     }
 }

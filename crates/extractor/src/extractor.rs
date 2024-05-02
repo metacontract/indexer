@@ -84,7 +84,11 @@ impl Extractor {
 
 
     pub async fn scan_contract(&mut self) {
-        while self.state.step <= 15 {
+        while 
+            self.state.context.registry.queue_per_step.len() > self.state.step // maybe no queueable and no insertion to the next step
+            && self.state.context.registry.queue_per_step[self.state.step].len() > 0 // maybe won't be called
+            && self.state.step <= 15
+        {
             match Executor::bulk_exec_and_reload(self.state.step, self.state.context.clone()).await {
                 Ok(()) => (),
                 Err(err) => {
@@ -95,6 +99,10 @@ impl Extractor {
 
             self.state.step += 1;
         }
+
+        println!("absolute_slots ::: {:?}", self.state.context.registry.absolute_slots.clone());
+        println!("values ::: {:?}", self.state.context.registry.values.clone());
+
     }
   
 }
