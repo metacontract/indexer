@@ -89,7 +89,7 @@ impl Extractor {
             && self.state.context.registry.queue_per_step[self.state.step].len() > 0 // maybe won't be called
             && self.state.step <= 15
         {
-            match Executor::bulk_exec_and_reload(self.state.step, self.state.context.clone()).await {
+            match Executor::bulk_exec_and_reload(self.state.step, &mut self.state.context.registry).await {
                 Ok(()) => (),
                 Err(err) => {
                     println!("Error reloading context: {}", err);

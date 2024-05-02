@@ -28,14 +28,13 @@ pub struct Executor;
 impl Executor {
 
     #[allow(unused_mut)]
-    pub async fn bulk_exec_and_reload(step: usize, mut context: Context) -> Result<(), Box<dyn Error>> {
+    pub async fn bulk_exec_and_reload(step: usize, registry: &mut Registry) -> Result<(), Box<dyn Error>> {
 
         let mut absolute_slots: HashMap<usize, String> = HashMap::new();
         let mut primitives: HashMap<usize, Executable> = HashMap::new();
         let mut pending_fillable_iterish: HashMap<usize, Executable> = HashMap::new();
         let mut filled_queueable_iterish: HashMap<usize, Executable> = HashMap::new();
 
-        let mut registry = &mut context.registry;
 
         // [exec]
         // - get absolute_slot
