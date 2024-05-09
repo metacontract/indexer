@@ -56,30 +56,34 @@ impl Registry {
     #[allow(unused_mut)]
     pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable>) -> &mut Self {
         for (id, e) in pending_fillable_iterish {
-            let (parsed_from, parsed_to) = self.get_parsed_index(e.clone());
-            self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
+            let (parsed_from, parsed_to) = match self.get_parsed_index(e.clone()) {
+                Ok((parsed_from, parsed_to)) => (parsed_from, parsed_to),
+                Err(err) => panic!("{}", err),
+            };
+            if parsed_to > 0 {
+                self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
+            }
         };
         self
     }
     fn get_iid(&self, from_length_target_cid: usize) -> Result<usize, Box<dyn Error>> {
         for (iid, e) in self.visited.clone() { // ast_instance_id
-            let _ancestors = e.ancestors();
-            let fullname = _ancestors.iter().map(|executable| executable.name.clone()).collect::<Vec<_>>().join("");
-            let class_paths = ConfigUtil::to_class_paths(fullname);
-
-            let visited_cid = ConfigUtil::calc_id(class_paths);
-            if visited_cid == from_length_target_cid {
+            if e.cid() == from_length_target_cid {
                 return Ok(iid);
             }
         }
         panic!("target_cid:{} hasn't visited yet.", from_length_target_cid);
     }
-    pub fn get_parsed_index(&self, e: Executable)-> (usize, usize) {
+    pub fn get_parsed_index(&self, e: Executable)-> Result<(usize, usize), Box<dyn Error>> {
         // Ref: mc_repo_fetcher:L137
-        let fullname = e.fullname();
-        // TODO: iter.child[i] is like ["iter", "child", "child[i]"] in Executable. But what we want is ["iter", "child", "[i]"]
-        let constraint_cid = ConfigUtil::calc_id(ConfigUtil::to_class_paths(fullname));
-
+        let constraint_cid = e.cid();
+        if e.is_iterish() && !self.constraints.contains_key(&constraint_cid) {
+            panic!("{} is iterish node in the guest protocol schema and was not in constraints definition in Indexer.yaml of the guest protocol repo. Please consider adding {} to Indexer.yaml", e.fullname(), e.fullname_in_conf());        
+        } else if !self.constraints.contains_key(&constraint_cid) {
+            panic!("{} was not in constraints definition in Indexer.yaml of the guest protocol repo.", e.fullname());
+        }
+        // TODO: head(mc.functions) is just regarded as class_paths and returning useless usize cid
+        // ??? what kind of errors must be returned?
         let from_length_target_cid = self.constraints[&constraint_cid]["from"];
         let from_length = match self.get_iid(from_length_target_cid) {
             Ok(from_length_target_iid) => self.values[&from_length_target_iid].clone(),
@@ -94,7 +98,7 @@ impl Registry {
         let to_length: usize = to_length.parse().unwrap();
         let from_length: usize = from_length.parse().unwrap();
 
-        (from_length, to_length)
+        Ok((from_length, to_length))
     }
 
     pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable>) -> &mut Self {

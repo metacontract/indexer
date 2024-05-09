@@ -232,10 +232,12 @@ impl Executable {
 
         _ancestors
     }
+    #[allow(dead_code)]
     pub fn fullname(&self) -> String {
-        let _ancestors = self.ancestors();
-        let fullname = _ancestors.iter().map(|executable| executable.name.clone()).collect::<Vec<_>>().join("");
-        fullname
+        self.instance_paths().join(".")
+    }
+    pub fn fullname_in_conf(&self) -> String {
+        self.paths_in_conf().join(".")
     }
     pub fn class_paths(&self) -> Vec<String> {
         let _ancestors = self.ancestors();
@@ -249,12 +251,18 @@ impl Executable {
                     _paths.push(e.name);
                 }
             } else {
-                _paths.push(e.value_type);
+                let regex = regex::Regex::new(r"t_struct\((\w+)\)\d{3}_storage").unwrap();
+                println!("executable.rs::255 e.value_type: {:?}", e.value_type.clone());
+                let captures = regex.captures(&e.value_type).unwrap();
+                let struct_name = captures.get(1).unwrap().as_str().to_string();
+                _paths.push(struct_name.clone());
             }
         }
+        _paths.push(self.name.replace("\"", ""));
         _paths
     }
     pub fn instance_paths(&self) -> Vec<String> {
+        // TODO: iter.child[i] is like ["iter", "child", "child[i]"] in Executable. But what we want is ["iter", "child", "[i]"]
         let _ancestors = self.ancestors();
         let mut _paths = Vec::new();
 
@@ -266,10 +274,38 @@ impl Executable {
                     _paths.push(e.name);
                 }
             } else {
-                _paths.push(e.value_type);
+                let regex = regex::Regex::new(r"t_struct\((\w+)\)\d{3}_storage").unwrap();
+                let captures = regex.captures(&e.value_type).unwrap();
+                let struct_name = captures.get(1).unwrap().as_str().to_string();
+                _paths.push(struct_name.clone());
             }
         }
+        _paths.push(self.name.replace("\"", ""));
         _paths
+    }
+    pub fn paths_in_conf(&self) -> Vec<String> {
+        let _ancestors = self.ancestors();
+        let mut _paths = Vec::new();
+
+        for e in _ancestors {
+            if e.belongs_to.is_some() {
+                if e.mapping_key.is_some() {
+                    _paths.push("[i]".to_string());
+                } else {
+                    _paths.push(e.name);
+                }
+            } else {
+                let regex = regex::Regex::new(r"t_struct\((\w+)\)\d{3}_storage").unwrap();
+                let captures = regex.captures(&e.value_type).unwrap();
+                let struct_name = captures.get(1).unwrap().as_str().to_string();
+                _paths.push(struct_name.clone());
+            }
+        }
+        _paths.push(self.name.replace("\"", ""));
+        _paths
+    }
+    pub fn cid(&self) -> usize {
+        ConfigUtil::calc_id(self.class_paths())
     }
 
 }

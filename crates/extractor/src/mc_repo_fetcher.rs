@@ -26,6 +26,7 @@ pub struct MCRepoFetcher {
     pub bundle: String,
     pub local_repo_path: PathBuf,
     pub identifier_path: PathBuf,
+    pub perf_config_path: PathBuf,
     pub schema_path: PathBuf,
     pub dummy_path: PathBuf,
     pub docs: Vec<Yaml>,
@@ -42,25 +43,46 @@ impl MCRepoFetcher {
         let schema_path = storage_path.join(format!("Schema.sol"));
         let dummy_path = storage_path.join(format!("Dummy.sol"));
         let perf_config_path = storage_path.join(format!("Indexer.yaml"));
-        let yaml_str = fs::read_to_string(&perf_config_path).expect("Failed to read YAML file");
-        let docs = YamlLoader::load_from_str(&yaml_str).expect("Failed to parse YAML");
         let standard_json_input_layout_sample_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap_or_else(|_| "standard_json_input_layout_sample.json".to_string())));
         let standard_json_input_layout_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap_or_else(|_| "standard_json_input_layout.json".to_string())));
 
+        let _self = Self {
+            url: format!("https://github.com/{}.git", identifier.clone()),
+            base_path: _base_path.clone(),
+            identifier: identifier.clone(),
+            bundle: bundle.clone(),
+            local_repo_path: local_repo_path.clone(),
+            identifier_path: identifier_path.clone(),
+            schema_path: schema_path.clone(),
+            dummy_path: dummy_path.clone(),
+            perf_config_path: perf_config_path.clone(),
+            docs: Vec::new(),
+            standard_json_input_layout_sample_path: standard_json_input_layout_sample_path.clone(),
+            standard_json_input_layout_path: standard_json_input_layout_path.clone(),
+        };
 
-        Self {
-            url: format!("https://github.com/{}.git", identifier),
-            base_path: _base_path,
-            identifier,
-            bundle,
-            local_repo_path,
-            identifier_path,
-            schema_path,
-            dummy_path,
+        _self.clone_repo().unwrap();
+
+        let yaml_str = fs::read_to_string(&perf_config_path.clone()).expect("Failed to read YAML file");
+        let docs = YamlLoader::load_from_str(&yaml_str).expect("Failed to parse YAML");
+
+
+        // Note: I wanted to prepare docs instance after cloning. I fix it lator.
+        let _self2 = Self {
+            url: format!("https://github.com/{}.git", identifier.clone()),
+            base_path: _base_path.clone(),
+            identifier: identifier.clone(),
+            bundle: bundle.clone(),
+            local_repo_path: local_repo_path.clone(),
+            identifier_path: identifier_path.clone(),
+            schema_path: schema_path.clone(),
+            dummy_path: dummy_path.clone(),
+            perf_config_path: perf_config_path.clone(),
             docs,
-            standard_json_input_layout_sample_path,
-            standard_json_input_layout_path,
-        }
+            standard_json_input_layout_sample_path: standard_json_input_layout_sample_path.clone(),
+            standard_json_input_layout_path: standard_json_input_layout_path.clone(),
+        };
+        _self2
     }
 
     pub fn clone_repo(&self) -> std::result::Result<(), Box<dyn std::error::Error>> {

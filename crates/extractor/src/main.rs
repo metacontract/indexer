@@ -42,7 +42,8 @@ async fn main() {
     let bundle = env::var("BUNDLE_NAME").unwrap();
 
     let mc_repo_fetcher = MCRepoFetcher::new(identifier.clone(), bundle.clone(), Some(project_root.clone()));
-    mc_repo_fetcher.clone_repo().unwrap();
+    // mc_repo_fetcher.clone_repo().unwrap();
+    
 
     let mut compiler = Compiler::new("solc".to_string(), project_root.clone(), identifier.clone(), bundle.clone());
     let base_slots = compiler.prepare_base_slots().unwrap();
