@@ -5,7 +5,7 @@ mod extractor;
 mod executor;
 mod registry;
 mod executable;
-mod perf_config_item;
+mod config_util;
 mod type_kind;
 mod eth_call;
 mod perf_expression_evaluator;
@@ -20,7 +20,7 @@ use extractor::Extractor;
 use executor::Executor;
 use registry::Registry;
 use executable::Executable;
-use perf_config_item::PerfConfigItem;
+use config_util::ConfigUtil;
 use type_kind::TypeKind;
 use eth_call::EthCall;
 use perf_expression_evaluator::PerfExpressionEvaluator;
@@ -54,7 +54,11 @@ async fn main() {
 
     #[allow(unused_mut)]
     let mut context = Context {
-        registry: Registry::new(storage_layout_blob, HashMap::new(), bundle.clone()),
+        registry: Registry::new(
+                    storage_layout_blob,
+                    mc_repo_fetcher.load_perf_config().expect("config load failed"),
+                    bundle.clone()
+                ),
     };
 
     let mut extractor = Extractor::new(context);

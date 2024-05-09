@@ -40,7 +40,8 @@ impl ASTNode {
             }
         }
     }
-    pub fn parse_type_str(type_str: &str) -> ParsedASTType {
+    pub fn parse_type_str(mut type_str: &str) -> ParsedASTType {
+        type_str = type_str.trim_matches(|c| c == '"' || c == '\\');
         let mut parsed_type = ParsedASTType {
             envelope: None,
             key_type: None,

@@ -3,7 +3,7 @@ use super::extractor::Extractor;
 // use super::executor::Executor;
 use super::registry::Registry;
 use super::executable::Executable;
-use super::perf_config_item::PerfConfigItem;
+use super::config_util::ConfigUtil;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
@@ -41,11 +41,17 @@ impl Executor {
         // - get value
         // - preserve them
         for e in registry.queue_per_step[step].clone() {
+            // match e.belongs_to {
+            //     Some(ref belongs_to) => {
+            //         println!("parent: {:?}  e:{:?} {:?}", belongs_to.name, e.fulltype, e.name);
+            //     },
+            //     None => {
+            //         println!("parent: ---  e:{:?} {:?}", e.fulltype, e.name);
+            //     }
+            // }
             absolute_slots.insert(e.id, e.clone().calculate_absolute_slot(&registry));
         }
-        println!("--->{:?}",  absolute_slots.len());
         registry.bulk_set_absolute_slots(&absolute_slots); // Note: use it for knowing parent slot
-        println!("---<{:?}",  registry.absolute_slots.len());
 
         let _contract_addr = match env::var("CONTRACT_ADDR") {
             Ok(addr) => addr,
@@ -57,6 +63,7 @@ impl Executor {
         };
         let values = EthCall::get_values_by_slots(&absolute_slots, "mainnet", &_contract_addr, &_contract_code).await?;
         registry.bulk_save_values(values.clone());
+        registry.bulk_save_visited(registry.queue_per_step[step].clone());
 
 
         // [reload]
@@ -82,7 +89,6 @@ impl Executor {
             .bulk_enqueue_execution(step+1, pending_fillable_iterish.clone())
             .bulk_enqueue_children_execution(step+1, &filled_queueable_iterish);
 
-        println!("primitives:{:?}", registry.output_flatten.len());
         Ok(())
     }
 }

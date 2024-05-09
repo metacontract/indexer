@@ -2,7 +2,7 @@ use super::compiler::Compiler;
 use super::executor::Executor;
 use super::registry::Registry;
 use super::executable::Executable;
-use super::perf_config_item::PerfConfigItem;
+use super::config_util::ConfigUtil;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;

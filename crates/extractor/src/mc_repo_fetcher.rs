@@ -1,8 +1,15 @@
 use super::executor::Executor;
 use super::registry::Registry;
 use super::ast_node::ASTNode;
+use super::config_util::ConfigUtil;
+use super::executable::Executable;
+
+
 use std::collections::HashMap;
 use serde_json::Value;
+use yaml_rust::Yaml;
+use yaml_rust::YamlLoader;
+use regex::Regex;
 use git2::Repository;
 use std::fs;
 use std::error::Error;
@@ -21,6 +28,7 @@ pub struct MCRepoFetcher {
     pub identifier_path: PathBuf,
     pub schema_path: PathBuf,
     pub dummy_path: PathBuf,
+    pub docs: Vec<Yaml>,
     pub standard_json_input_layout_sample_path: PathBuf,
     pub standard_json_input_layout_path: PathBuf,
 }
@@ -33,8 +41,12 @@ impl MCRepoFetcher {
         let storage_path = identifier_path.join(format!("src/{}/storages", bundle));
         let schema_path = storage_path.join(format!("Schema.sol"));
         let dummy_path = storage_path.join(format!("Dummy.sol"));
+        let perf_config_path = storage_path.join(format!("Indexer.yaml"));
+        let yaml_str = fs::read_to_string(&perf_config_path).expect("Failed to read YAML file");
+        let docs = YamlLoader::load_from_str(&yaml_str).expect("Failed to parse YAML");
         let standard_json_input_layout_sample_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap_or_else(|_| "standard_json_input_layout_sample.json".to_string())));
         let standard_json_input_layout_path = local_repo_path.join(format!("{}", env::var("STANDARD_JSON_INPUT_LAYOUT_NAME").unwrap_or_else(|_| "standard_json_input_layout.json".to_string())));
+
 
         Self {
             url: format!("https://github.com/{}.git", identifier),
@@ -45,6 +57,7 @@ impl MCRepoFetcher {
             identifier_path,
             schema_path,
             dummy_path,
+            docs,
             standard_json_input_layout_sample_path,
             standard_json_input_layout_path,
         }
@@ -111,6 +124,53 @@ impl MCRepoFetcher {
             panic!("standard_json_input_layout_path({}) isn't exist.", self.standard_json_input_layout_path.to_str().unwrap());            
         }
         Ok(())
+    }
+
+    pub fn load_perf_config(&self) -> Result<HashMap<usize, HashMap<String, usize>>, Box<dyn Error>> {
+        let mut _constraints: HashMap<usize, HashMap<String, usize>> = HashMap::new();
+        if let Some(constraints) = self.docs[0]["constraints"].as_hash() {
+            for (key, value) in constraints {
+                if let Yaml::String(key_str) = key {
+                    let expanded_constraint = self.resolve_user_defined_vars(key_str.clone());
+                    let constraint_class_paths = ConfigUtil::to_class_paths(expanded_constraint);
+                    let constraint_cid = ConfigUtil::calc_id(constraint_class_paths);
+
+                    if let Yaml::Hash(hash) = value {
+                        for (sub_key, sub_value) in hash {
+                            if let (Yaml::String(sub_key_str), Yaml::String(sub_value_str)) = (sub_key, sub_value) {
+                                let expanded_from_to = self.resolve_user_defined_vars(sub_key_str.clone());
+                                let expanded_target = self.resolve_user_defined_vars(sub_value_str.clone());
+                                let target_class_paths = expanded_target.split(".").map(|part| part.replace("[i]", "")).collect::<Vec<_>>();
+                                let target_cid = ConfigUtil::calc_id(target_class_paths);
+                                if !_constraints.contains_key(&constraint_cid) {
+                                    _constraints.insert(constraint_cid, HashMap::new());
+                                }
+                                _constraints.get_mut(&constraint_cid).unwrap().insert(expanded_from_to.clone(), target_cid);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(_constraints)
+    }
+
+    // It apply var declaration up-side-down direction (latter defined var applied first)
+    fn resolve_user_defined_vars(&self, expr: String)->String{
+
+        if let Some(vars) = self.docs[0]["vars"].as_hash() {
+            for (key, value) in vars.into_iter().rev() {
+                if let (Yaml::String(key_str), Yaml::String(value_str)) = (key, value) {
+                    let original_expr = expr.clone();
+                    let replaced_expr = expr.replace(key_str, value_str);
+                    if original_expr != replaced_expr {
+                        return replaced_expr.clone();
+                    } else {
+                    }
+                }
+            }
+        }
+        expr.clone()
     }
 }
 

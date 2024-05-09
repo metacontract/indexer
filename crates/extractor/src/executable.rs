@@ -3,7 +3,7 @@ use super::extractor::Extractor;
 use super::executor::Executor;
 use super::registry::Registry;
 // use super::executable::Executable;
-use super::perf_config_item::PerfConfigItem;
+use super::config_util::ConfigUtil;
 use super::type_kind::TypeKind;
 use super::eth_call::EthCall;
 use super::perf_expression_evaluator::PerfExpressionEvaluator;
@@ -24,7 +24,7 @@ use num_traits::{ToPrimitive, Zero};
 
 
 #[allow(dead_code)]
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Executable {
     pub id: usize,
     pub name: String,
@@ -34,7 +34,7 @@ pub struct Executable {
     pub value_type: String,
     offset: usize,
     relative_slot: String,
-    mapping_key: Option<String>,
+    pub mapping_key: Option<String>,
     pub key_type: Option<String>,
 }
 
@@ -137,7 +137,7 @@ impl Executable {
         let (_, to) = match registry.iterish_from_to.get(&self.id) {
             Some((from, to)) => (*from, *to),
             None => {
-                panic!("No from/to values found for executable with ID: {}", self.id);
+                return false;
             }
         };
 
@@ -216,6 +216,60 @@ impl Executable {
         }
     
         Ok(result_hex)
+    }
+
+    pub fn ancestors(&self) -> Vec<Executable> {
+        let mut _ancestors: Vec<Executable> = Vec::new();
+
+        if let Some(parent) = self.belongs_to.as_ref() {
+            _ancestors.insert(0, *parent.clone());
+            let mut current = parent;
+            while let Some(grandparent) = current.belongs_to.as_ref() {
+                _ancestors.insert(0, *grandparent.clone());
+                current = grandparent;
+            }
+        }
+
+        _ancestors
+    }
+    pub fn fullname(&self) -> String {
+        let _ancestors = self.ancestors();
+        let fullname = _ancestors.iter().map(|executable| executable.name.clone()).collect::<Vec<_>>().join("");
+        fullname
+    }
+    pub fn class_paths(&self) -> Vec<String> {
+        let _ancestors = self.ancestors();
+        let mut _paths = Vec::new();
+
+        for e in _ancestors {
+            if e.belongs_to.is_some() {
+                if e.mapping_key.is_some() {
+                    // skip
+                } else {
+                    _paths.push(e.name);
+                }
+            } else {
+                _paths.push(e.value_type);
+            }
+        }
+        _paths
+    }
+    pub fn instance_paths(&self) -> Vec<String> {
+        let _ancestors = self.ancestors();
+        let mut _paths = Vec::new();
+
+        for e in _ancestors {
+            if e.belongs_to.is_some() {
+                if e.mapping_key.is_some() {
+                    _paths.push(e.mapping_key.unwrap());
+                } else {
+                    _paths.push(e.name);
+                }
+            } else {
+                _paths.push(e.value_type);
+            }
+        }
+        _paths
     }
 
 }

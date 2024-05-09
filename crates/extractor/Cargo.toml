@@ -23,6 +23,8 @@ regex = "1.10.4"
 tokio = { version = "1.0", features = ["full"] }
 num-bigint = "0.4"
 num-traits = "0.2"
+yaml-rust = "0.4.5"
+
 [workspace]
 members = [
 ]
