@@ -162,7 +162,7 @@ impl MCRepoFetcher {
                             if let (Yaml::String(sub_key_str), Yaml::String(sub_value_str)) = (sub_key, sub_value) {
                                 let expanded_from_to = self.resolve_user_defined_vars(sub_key_str.clone());
                                 let expanded_target = self.resolve_user_defined_vars(sub_value_str.clone());
-                                let target_class_paths = expanded_target.split(".").map(|part| part.replace("[i]", "")).collect::<Vec<_>>();
+                                let target_class_paths = ConfigUtil::to_class_paths(expanded_target);
                                 let target_cid = ConfigUtil::calc_id(target_class_paths);
                                 if !_constraints.contains_key(&constraint_cid) {
                                     _constraints.insert(constraint_cid, HashMap::new());

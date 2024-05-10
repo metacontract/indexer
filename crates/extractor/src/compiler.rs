@@ -122,8 +122,6 @@ mod tests {
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
         }
 
-        fetcher.clone_repo().unwrap();
-
         let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone(), fetcher.bundle.clone());
         let baseslots = match compiler.prepare_base_slots() {
             Ok(blob) => blob,
@@ -154,8 +152,6 @@ mod tests {
             let copy_source = env::current_dir().unwrap().join(PathBuf::from(env::var("REPO_PATH").unwrap()).join(env::var("STANDARD_JSON_INPUT_LAYOUT_SAMPLE_NAME").unwrap()));
             fs::copy(copy_source.clone(), &fetcher.standard_json_input_layout_path).unwrap();    
         }
-
-        fetcher.clone_repo().unwrap();
     
         let mut compiler = Compiler::new("solc".to_string(), fetcher.base_path.clone(), fetcher.identifier.clone(), fetcher.bundle.clone());
         let base_slots = compiler.prepare_base_slots().unwrap();
