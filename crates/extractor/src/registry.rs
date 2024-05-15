@@ -17,12 +17,32 @@ use std::error::Error;
 use std::result::Result;
 use std::result::Result::{Ok, Err};
 
+use bnf::ParseTree;
+
+
+#[derive(Clone)]
+pub struct Constraint {
+    pub cid: usize,
+    pub through: Option<Box<Vec<ParseTree>>>,
+    pub from: Option<Box<Vec<ParseTree>>>,
+    pub to: Option<Box<Vec<ParseTree>>>,
+}
+impl Constraint {
+    pub fn new(cid: usize) -> Self {
+        Self {
+            cid,
+            through: None,
+            from: None,
+            to: None,
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Registry {
     pub queue_per_step: Vec<Vec<Executable>>,
     pub visited: HashMap<usize, Executable>,
-    pub constraints: HashMap<usize, HashMap<String, usize>>, // constraint_cid, from|to, target_cid
+    pub constraints: HashMap<usize, Constraint>, // constraint_cid, from|to, target_cid
     pub iterish_from_to: HashMap<usize, (usize, usize)>, // key=ast_id
     pub output_flatten: HashMap<usize, Executable>, // key=ast_id
     pub types: Value, // ast info
@@ -31,7 +51,7 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn new(blob:Value, constraints: HashMap<usize, HashMap<String, usize>>, bundle: String) -> Self {
+    pub fn new(blob:Value, constraints: HashMap<usize, Constraint>, bundle: String) -> Self {
 
         Self {
             queue_per_step: Vec::new(),
@@ -56,13 +76,21 @@ impl Registry {
     #[allow(unused_mut)]
     pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable>) -> &mut Self {
         for (id, e) in pending_fillable_iterish {
-            let (parsed_from, parsed_to) = match self.get_parsed_index(e.clone()) {
-                Ok((parsed_from, parsed_to)) => (parsed_from, parsed_to),
+            match self.eval_config(e.clone()) {
+                Ok((op_through, op_from_str, op_to_str)) => {
+                    match op_through {
+                        Some(through_str) => {
+                            let through_cid = ConfigUtil::calc_id(ConfigUtil::to_class_paths(through_str));
+                            let through_iid = self.get_iid(through_cid).unwrap();        
+                            self.iterish_from_to.insert(through_iid, (op_from_str.unwrap().parse::<usize>().unwrap(), op_to_str.unwrap().parse::<usize>().unwrap()));
+                        },
+                        None => {
+                            self.iterish_from_to.insert(*id, (op_from_str.unwrap().parse::<usize>().unwrap(), op_to_str.unwrap().parse::<usize>().unwrap()));
+                        }
+                    }
+                },
                 Err(err) => panic!("{}", err),
             };
-            if parsed_to > 0 {
-                self.iterish_from_to.insert(*id, (parsed_from, parsed_to));
-            }
         };
         self
     }
@@ -74,7 +102,7 @@ impl Registry {
         }
         panic!("target_cid:{} hasn't visited yet.", from_length_target_cid);
     }
-    pub fn get_parsed_index(&self, e: Executable)-> Result<(usize, usize), Box<dyn Error>> {
+    pub fn eval_config(&self, e: Executable)-> Result<(Option<String>, Option<String>, Option<String>), Box<dyn Error>> {
         // Ref: mc_repo_fetcher:L137
         let constraint_cid = e.cid();
         if e.is_iterish() && !self.constraints.contains_key(&constraint_cid) {
@@ -82,23 +110,11 @@ impl Registry {
         } else if !self.constraints.contains_key(&constraint_cid) {
             panic!("{} was not in constraints definition in Indexer.yaml of the guest protocol repo.", e.fullname());
         }
-        // TODO: head(mc.functions) is just regarded as class_paths and returning useless usize cid
-        // ??? what kind of errors must be returned?
-        let from_length_target_cid = self.constraints[&constraint_cid]["from"];
-        let from_length = match self.get_iid(from_length_target_cid) {
-            Ok(from_length_target_iid) => self.values[&from_length_target_iid].clone(),
-            Err(err) => panic!("{}", err),
-        };
 
-        let to_length_target_cid = self.constraints[&constraint_cid]["to"];
-        let to_length = match self.get_iid(to_length_target_cid) {
-            Ok(to_length_target_iid) => self.values[&to_length_target_iid].clone(),
-            Err(err) => panic!("{}", err),
-        };
-        let to_length: usize = to_length.parse().unwrap();
-        let from_length: usize = from_length.parse().unwrap();
-
-        Ok((from_length, to_length))
+        let through_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].through, None);
+        let from_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].from, None);
+        let to_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].to, None);
+        Ok((through_stack.get(0).cloned(), from_stack.get(0).cloned(), to_stack.get(0).cloned()))
     }
 
     pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable>) -> &mut Self {
@@ -111,8 +127,44 @@ impl Registry {
     {
         let mut _self = self;
         {
-            let from_to = _self.iterish_from_to.get(&executable.id);
-            let children = executable.children(&_self.clone(), from_to.clone()).unwrap();
+            let children = match &executable.through {
+                Some(through) => {
+                    let through_cid = ConfigUtil::calc_id(through.class_paths());
+                    let through_iid = _self.get_iid(through_cid).unwrap();
+                    let from_to = _self.iterish_from_to.get(&through_iid);
+
+                    // make up a vector of index
+                    let indices = if let Some((from, to)) = from_to {
+                        let mut indices = Vec::new();
+                        for i in *from..=*to {
+                            indices.push(i.to_string());
+                        }
+                        indices
+                    } else {
+                        Vec::new()
+                    };
+
+                    // get non-numeric mapping key as filled-or-non-filled unknown state
+                    let non_numeric_key_executables = through.children(&_self.clone(), Some(indices)).unwrap();
+                    let mut non_numeric_indice = Vec::new();
+                    for child in non_numeric_key_executables.clone() {
+                        let through_child_cid = ConfigUtil::calc_id(child.class_paths());
+                        let through_child_iid = _self.get_iid(through_child_cid).unwrap();
+                        let through_child_value = _self.values[&through_child_iid].clone();
+                        non_numeric_indice.push(through_child_value);
+                    }
+                    if non_numeric_indice.len() > 0 {
+                        let children = executable.children(&_self.clone(), Some(non_numeric_indice)).unwrap();
+                        children
+                    } else {
+                        non_numeric_key_executables.clone() // TODO: enqueue through first, after filling through, want to enqueue executable. But how?
+                    }
+                },
+                None => {
+                    let children = executable.children(&_self.clone(), None).unwrap();
+                    children    
+                }
+            }
             _self.queue_per_step.insert(step, children);
             _self
         }

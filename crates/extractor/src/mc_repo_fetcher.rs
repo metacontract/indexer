@@ -1,3 +1,5 @@
+use crate::registry::Constraint;
+
 use super::executor::Executor;
 use super::registry::Registry;
 use super::ast_node::ASTNode;
@@ -149,7 +151,7 @@ impl MCRepoFetcher {
     }
 
     pub fn load_perf_config(&self) -> Result<HashMap<usize, HashMap<String, usize>>, Box<dyn Error>> {
-        let mut _constraints: HashMap<usize, HashMap<String, usize>> = HashMap::new();
+        let mut _constraints: HashMap<usize, Constraint> = HashMap::new();
         if let Some(constraints) = self.docs[0]["constraints"].as_hash() {
             for (key, value) in constraints {
                 if let Yaml::String(key_str) = key {
@@ -158,16 +160,28 @@ impl MCRepoFetcher {
                     let constraint_cid = ConfigUtil::calc_id(constraint_class_paths);
 
                     if let Yaml::Hash(hash) = value {
+                        /*
+                            let conf = Config::new();
+                        */ 
+                        let _constraint = Constraint::new(constraint_cid.clone());
                         for (sub_key, sub_value) in hash {
                             if let (Yaml::String(sub_key_str), Yaml::String(sub_value_str)) = (sub_key, sub_value) {
-                                let expanded_from_to = self.resolve_user_defined_vars(sub_key_str.clone());
-                                let expanded_target = self.resolve_user_defined_vars(sub_value_str.clone());
-                                let target_class_paths = ConfigUtil::to_class_paths(expanded_target);
-                                let target_cid = ConfigUtil::calc_id(target_class_paths);
-                                if !_constraints.contains_key(&constraint_cid) {
-                                    _constraints.insert(constraint_cid, HashMap::new());
+                                let expanded_target = self.resolve_user_defined_vars(sub_key_str.clone());
+
+                                // Note: [1] ParseTree must be returned and stored to registry.
+                                if sub_value_str.clone() == "through" {
+                                    _constraint.through = Some(ConfigUtil::parse_config(expanded_target));
+                                } else if (sub_value_str.clone() == "from") {
+                                    _constraint.from = Some(ConfigUtil::parse_config(expanded_target));
+                                } else if (sub_value_str.clone() == "to") {
+                                    _constraint.to = Some(ConfigUtil::parse_config(expanded_target));
+                                } else {
+                                    panic!("Unknown config field: {}", expanded_target.clone());
                                 }
-                                _constraints.get_mut(&constraint_cid).unwrap().insert(expanded_from_to.clone(), target_cid);
+                                
+                                if !_constraints.contains_key(&constraint_cid) {
+                                    _constraints.insert(constraint_cid, _constraint.clone());
+                                }
                             }
                         }
                     }

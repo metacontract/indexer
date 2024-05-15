@@ -36,6 +36,7 @@ pub struct Executable {
     relative_slot: String,
     pub mapping_key: Option<String>,
     pub key_type: Option<String>,
+    pub through: Option<Box<Executable>>, // intermediate table for achieving non-numeric index of mapping
 }
 
 
@@ -51,6 +52,7 @@ impl Executable {
         relative_slot: String,
         mapping_key: Option<String>,
         key_type: Option<String>,
+        through: Option<Box<Executable>>,
     ) -> Self {
         Self {
             id,
@@ -63,21 +65,18 @@ impl Executable {
             relative_slot,
             mapping_key,
             key_type,
+            through,
         }
     }
 
     pub fn is_iterish(&self) -> bool {
         self.type_kind.is_iterish()
     }
-    pub fn children(&self, registry: &Registry, from_to: Option<&(usize, usize)>) -> Result<Vec<Executable>, Box<dyn Error>> {
+    pub fn children(&self, registry: &Registry, indices: Option<Vec<String>>) -> Result<Vec<Executable>, Box<dyn Error>> {
         let mut children = Vec::new();
 
         let current_node = &registry.visit_ast(&self.fulltype).unwrap();
 
-        let to = match from_to {
-            Some((_, to)) => to.clone(),
-            None => 0
-        };
 
         match current_node.get("members") {
             Some(_members) => {
@@ -96,14 +95,15 @@ impl Executable {
                         _member.get("slot").unwrap().to_string(), // slot of the current node
                         None,
                         None,
+                        // Some(ConfigUtil::eval_parse_tree(registry.constraints[cid_of_this_child].through).to_executable())
                     );
                     children.push(new_executable);
                 }
                 Ok(children)
             },
             None => {
-                if self.is_iterish() && to > 0 {
-                    for i in 0..to {
+                if self.is_iterish() && indices.unwrap().len() > 0 {
+                    for i in indices.unwrap() {
                         let key_type = current_node.get("key_type").unwrap().to_string();
                         let value_type = current_node.get("value_type").unwrap().to_string();
                         let _ast_id = u64::from_le_bytes(keccak256(&format!("{}{}", value_type, i).as_bytes())[..8].try_into().unwrap()) as usize;
@@ -118,8 +118,9 @@ impl Executable {
                             value_type.clone(), // type of the current node
                             current_node.get("offset").unwrap().as_u64().unwrap() as usize, // offset of the current node
                             current_node.get("slot").unwrap().to_string(), // slot of the current node
-                            Some(i.to_string()),
+                            Some(i),
                             Some(key_type.clone()),
+                            // Some(ConfigUtil::eval_parse_tree(registry.constraints[cid_of_this_child].through).to_executable())
                         );
                         children.push(new_executable);
                     }
@@ -252,7 +253,6 @@ impl Executable {
                 }
             } else {
                 let regex = regex::Regex::new(r"t_struct\((\w+)\)\d{3}_storage").unwrap();
-                println!("executable.rs::255 e.value_type: {:?}", e.value_type.clone());
                 let captures = regex.captures(&e.value_type).unwrap();
                 let struct_name = captures.get(1).unwrap().as_str().to_string();
                 _paths.push(struct_name.clone());
