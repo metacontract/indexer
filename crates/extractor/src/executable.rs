@@ -36,7 +36,6 @@ pub struct Executable {
     relative_slot: String,
     pub mapping_key: Option<String>,
     pub key_type: Option<String>,
-    pub through: Option<Box<Executable>>, // intermediate table for achieving non-numeric index of mapping
 }
 
 
@@ -52,7 +51,6 @@ impl Executable {
         relative_slot: String,
         mapping_key: Option<String>,
         key_type: Option<String>,
-        through: Option<Box<Executable>>,
     ) -> Self {
         Self {
             id,
@@ -65,7 +63,6 @@ impl Executable {
             relative_slot,
             mapping_key,
             key_type,
-            through,
         }
     }
 
@@ -95,7 +92,6 @@ impl Executable {
                         _member.get("slot").unwrap().to_string(), // slot of the current node
                         None,
                         None,
-                        // Some(ConfigUtil::eval_parse_tree(registry.constraints[cid_of_this_child].through).to_executable())
                     );
                     children.push(new_executable);
                 }
@@ -120,7 +116,6 @@ impl Executable {
                             current_node.get("slot").unwrap().to_string(), // slot of the current node
                             Some(i),
                             Some(key_type.clone()),
-                            // Some(ConfigUtil::eval_parse_tree(registry.constraints[cid_of_this_child].through).to_executable())
                         );
                         children.push(new_executable);
                     }

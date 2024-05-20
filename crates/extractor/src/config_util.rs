@@ -51,7 +51,8 @@ impl ConfigUtil {
     }
 
 
-    pub fn parse_config(constraint_name:String) -> Vec<ParseTree> {
+    // returns: bytecode = vec!(lines),  line = vec!(expr.to_array)
+    pub fn parse_config(constraint_name:String) -> Vec<Vec<String>> {
 
         let input = r##"
         <expr> ::= <term> | <term> " " <operator> " " <expr> | <term> <operator> " " <expr> | <term> " " <operator> <expr> | <term> <operator> <expr>
@@ -59,9 +60,9 @@ impl ConfigUtil {
         <factor> ::= <base> | <l_paren> <expr> <r_paren>
         <base> ::= <fullname> | <funcs> <l_paren> <expr> <r_paren> | <vars>
         
-        <operator> ::= "+" | "-" | "/" | "*"
+        <operator> ::= "+" | "-" | "*" | "/" | "%"
         
-        <funcs> ::= "updatedAt"
+        <funcs> ::= "createdAt" | "updatedAt" | "head" | "tail"
         <vars> ::= "block.timestamp"
         
         <fullname> ::= <path> | <path> <index> | <path> <delimiter> <fullname> | <path> <index> <delimiter> <fullname>
@@ -74,6 +75,7 @@ impl ConfigUtil {
         <symbol> ::= "$" | "_"
         <letter> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
         <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+        
         "##;
         let grammar: Grammar = input.parse().unwrap();
         let sentence = constraint_name.clone();
@@ -81,7 +83,9 @@ impl ConfigUtil {
             .parse_input(&sentence)
             .collect();
 
-        parses
+        let bytecode = Self::eval_parse_tree(&parses);
+
+        bytecode.clone()
     }
     pub fn to_class_paths(name:String) -> Vec<String> {
         name.clone()
@@ -92,57 +96,115 @@ impl ConfigUtil {
 
     // TODO: [2] Constraint to ParseTree. Must be used in registry.rs:L90
     pub fn eval_parse_tree(
-        parse: &ParseTree,
-        stack: Option<Vec<String>>
-    ) -> Vec<String> {
-        let mut stack: Vec<String> = if let Some(s) = stack {
-            s
-        } else {
-            Vec::new()
-        };
+        parses: &Vec<ParseTree>,
+    ) -> Vec<Vec<String>> {
 
-        for rhs in parse.rhs_iter() {
-            match rhs {
-                ParseTreeNode::Terminal(_) => {
-                }
-                ParseTreeNode::Nonterminal(new_parse) => {
-                    match Self::check_mode(new_parse) {
-                        ParseMode::Expr => {
-                            stack = Self::eval_parse_tree(new_parse, Some(stack));
-                        },
-                        ParseMode::Base => {
-                            stack = Self::eval_parse_tree(new_parse, Some(stack));
-                        },
-                        ParseMode::Factor => {
-                            stack = Self::eval_parse_tree(new_parse, Some(stack));
-                        },
-                        ParseMode::Term => {
-                            stack = Self::eval_parse_tree(new_parse, Some(stack));
-                        },
-                        ParseMode::Operator=> {
-                            stack.push(Self::parse_concat(new_parse));
-                        },
-                        ParseMode::Fullname => {
-                            stack.push(Self::parse_concat(new_parse));
-                        },
-                        ParseMode::Vars => {
-                            stack.push(Self::parse_concat(new_parse));
-                        },
-                        ParseMode::Funcs=> {
-                            stack.push(Self::parse_concat(new_parse));
-                        },
-                        ParseMode::Char => {
-                            stack.push(Self::parse_concat(new_parse));
-                        },
-                        _ => {
-                        }
-                    }
-                }
-    
-            }            
+        let mut stack = Vec::new();
+        let tree_stack = Box::new(Vec::new());
+        for parse in parses {
+            Self::slice_newline(parse, &mut stack, &mut tree_stack);
         }
         stack.clone()
     }
+
+    pub fn eval_bytecode(mut stack: Vec<Vec<String>>, e: Executable) -> usize {
+        stack.reverse();
+        let mut reversed_stack = stack.clone();
+        for (i, line) in reversed_stack.iter().enumerate() {
+            // Note: Parsed reversed stack compresses lines from primitive values to complex formula
+            // If line didn't meet with each function confition, then nothing would be changed.
+
+            line = Self::expand_filtrated_var_with_value(line); // 1. var to value
+            line = Self::apply_precalculated_vars(line, &mut reversed_stack); // ex
+            line = Self::apply_func(line);
+            (operator_op, operator_args_as_line) = Self::arrange_for_operator(line);
+            line = Self::apply_operator(line);
+
+            reversed_stack[i] = line.clone();
+        }
+
+        reversed_stack.last().unwrap().get(0).unwrap().parse::<usize>().unwrap()
+    }
+
+
+    fn slice_newline(new_parse: &ParseTree, mut stack: &mut Vec<Vec<String>>, tree_stack: &mut Box<Vec<Vec<ParseTree>>>) -> () {
+        let mut current_line = Vec::new();
+
+        // if new_parse has single rhs and it is fullname, vars, or char, then jdo nothing
+        let current_stack_depth = stack.len();
+        for (i, rhs) in new_parse.rhs_iter().enumerate() {
+            match rhs {
+                ParseTreeNode::Terminal(_) => {
+                }
+                ParseTreeNode::Nonterminal(new_parse2) => {
+                    tree_stack[current_stack_depth].push(new_parse2.clone());
+                }
+            }
+        }
+
+        let mut copy_tree_stack = tree_stack.clone();
+        for (i, parse) in copy_tree_stack[current_stack_depth].clone().iter_mut().enumerate() {
+            match Self::check_mode(parse) {
+                ParseMode::Expr => {
+                    // down to next
+                    Self::slice_newline(parse, stack, tree_stack);
+                },
+                ParseMode::Term => {
+                    // down to next
+                    Self::slice_newline(parse, stack, tree_stack);
+                },
+                ParseMode::Factor => {
+                    // down to next
+                    Self::slice_newline(parse, stack, tree_stack);
+                },
+                ParseMode::Base => {
+                    // down to next
+                    Self::slice_newline(parse, stack, tree_stack);
+                },
+                ParseMode::Operator=> {
+                    // Nice! just push.
+                    current_line.push(Self::parse_concat(parse));
+                },
+                ParseMode::Funcs=> {
+                    current_line.push(Self::parse_concat(parse)); // push this to current_line
+                    copy_tree_stack[current_stack_depth].remove(i); // regard following tree L_N
+
+                    let new_line_depth = current_stack_depth + 1;
+                    // TODO: don't push, insert
+                    current_line.push(format!("L{}", new_line_depth)); // insert L_N to current_line, current index
+                    tree_stack[new_line_depth] = copy_tree_stack[current_stack_depth].clone(); // push following tree to newline
+                },
+                ParseMode::Fullname=> {
+                    if copy_tree_stack[current_stack_depth].len() == 1 {
+                        current_line.push(Self::parse_concat(parse)); // push a fullname concat to current line
+                    } else {
+                        copy_tree_stack[current_stack_depth].remove(i);
+
+                        let new_line_depth = current_stack_depth + 1;
+                        // TODO: don't push, insert
+                        current_line.push(format!("L{}", new_line_depth));// insert L_N to current_line, current index
+                        tree_stack[new_line_depth] = copy_tree_stack[current_stack_depth].clone(); // push fullname to newline
+                    }
+                },
+                ParseMode::Vars=> {
+                    if copy_tree_stack[current_stack_depth].len() == 1 {
+                        current_line.push(Self::parse_concat(parse)); // push a fullname concat to current line
+                    } else {
+                        copy_tree_stack[current_stack_depth].remove(i);
+
+                        let new_line_depth = current_stack_depth + 1;
+                        // TODO: don't push, insert
+                        current_line.push(format!("L{}", new_line_depth));// insert L_N to current_line, current index
+                        tree_stack[new_line_depth] = copy_tree_stack[current_stack_depth].clone(); // push var to newline
+                    }
+                },
+                _ => {
+
+                }
+            }
+        }
+    }
+
     fn check_mode(parse: &ParseTree) -> ParseMode {
         match parse.lhs {
             Term::Terminal(_) => {
@@ -194,5 +256,54 @@ impl ConfigUtil {
         };
         _string_array.join("")
     }
+    fn arrange_for_operator(line) -> (Option<String>, Vec<String>) {
+        let mut operator:Option<String> = None;
+        for (i, opcode) in line.iter().enumerate() {
+            if opcode.is_operator() {
+                operator = Some(opcode.clone());
+                line.remove(i);
+            }
+        };
+
+        operator match {
+            Some(opeartor) => {
+                vec!(operator).concat(line)
+            },
+            None => {
+                line
+            }
+        }
+    }
     
+    fn apply_precalculated_vars(line: &mut Vec<String>, revstack) -> Vec<String> {
+        for (i, opcode) in line.iter().enumerate() {
+            if opcode.test("^L(\d+)$") {
+                line[i] = revstack[revstack.len() - captured.get(0).unwrap()];
+            }
+        }
+        line
+    }
+    
+    fn expand_filtrated_var_with_value(mut line: Vec<String>) -> Vec<String> {
+        for (i, opcode) in line.iter().enumerate() {
+            let _var = Self::is_reserved_words(opcode);
+            match _var {
+                Some(_var) => {
+                    line[i] = Self::access_var(_var);
+                    // registry.get_iid(ConfigUtil::calc_id(ConfigUtil::to_class_paths(opcode))
+                },
+                None => {
+                    line[i] = Self::access_values_or_db(opcode);
+                }
+            }
+        }
+        line
+    }
+    fn apply_func(line) -> Vec<String> {
+
+    }
+    
+    fn apply_operator(line) -> Vec<String> {
+    
+    }
 }

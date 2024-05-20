@@ -169,9 +169,7 @@ impl MCRepoFetcher {
                                 let expanded_target = self.resolve_user_defined_vars(sub_key_str.clone());
 
                                 // Note: [1] ParseTree must be returned and stored to registry.
-                                if sub_value_str.clone() == "through" {
-                                    _constraint.through = Some(ConfigUtil::parse_config(expanded_target));
-                                } else if (sub_value_str.clone() == "from") {
+                                if (sub_value_str.clone() == "from") {
                                     _constraint.from = Some(ConfigUtil::parse_config(expanded_target));
                                 } else if (sub_value_str.clone() == "to") {
                                     _constraint.to = Some(ConfigUtil::parse_config(expanded_target));

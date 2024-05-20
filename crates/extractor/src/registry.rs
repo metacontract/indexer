@@ -23,7 +23,6 @@ use bnf::ParseTree;
 #[derive(Clone)]
 pub struct Constraint {
     pub cid: usize,
-    pub through: Option<Box<Vec<ParseTree>>>,
     pub from: Option<Box<Vec<ParseTree>>>,
     pub to: Option<Box<Vec<ParseTree>>>,
 }
@@ -31,7 +30,6 @@ impl Constraint {
     pub fn new(cid: usize) -> Self {
         Self {
             cid,
-            through: None,
             from: None,
             to: None,
         }
@@ -77,17 +75,8 @@ impl Registry {
     pub fn bulk_fill_from_to(&mut self, pending_fillable_iterish: &HashMap<usize, Executable>) -> &mut Self {
         for (id, e) in pending_fillable_iterish {
             match self.eval_config(e.clone()) {
-                Ok((op_through, op_from_str, op_to_str)) => {
-                    match op_through {
-                        Some(through_str) => {
-                            let through_cid = ConfigUtil::calc_id(ConfigUtil::to_class_paths(through_str));
-                            let through_iid = self.get_iid(through_cid).unwrap();        
-                            self.iterish_from_to.insert(through_iid, (op_from_str.unwrap().parse::<usize>().unwrap(), op_to_str.unwrap().parse::<usize>().unwrap()));
-                        },
-                        None => {
-                            self.iterish_from_to.insert(*id, (op_from_str.unwrap().parse::<usize>().unwrap(), op_to_str.unwrap().parse::<usize>().unwrap()));
-                        }
-                    }
+                Ok((op_from_str, op_to_str)) => {
+                    self.iterish_from_to.insert(*id, (op_from_str.unwrap().parse::<usize>().unwrap(), op_to_str.unwrap().parse::<usize>().unwrap()));
                 },
                 Err(err) => panic!("{}", err),
             };
@@ -102,7 +91,7 @@ impl Registry {
         }
         panic!("target_cid:{} hasn't visited yet.", from_length_target_cid);
     }
-    pub fn eval_config(&self, e: Executable)-> Result<(Option<String>, Option<String>, Option<String>), Box<dyn Error>> {
+    pub fn eval_config(&self, e: Executable)-> Result<(Option<String>, Option<String>), Box<dyn Error>> {
         // Ref: mc_repo_fetcher:L137
         let constraint_cid = e.cid();
         if e.is_iterish() && !self.constraints.contains_key(&constraint_cid) {
@@ -111,10 +100,9 @@ impl Registry {
             panic!("{} was not in constraints definition in Indexer.yaml of the guest protocol repo.", e.fullname());
         }
 
-        let through_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].through, None);
         let from_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].from, None);
         let to_stack = ConfigUtil::eval_parse_tree(self.constraints[&constraint_cid].to, None);
-        Ok((through_stack.get(0).cloned(), from_stack.get(0).cloned(), to_stack.get(0).cloned()))
+        Ok((from_stack.get(0).cloned(), to_stack.get(0).cloned()))
     }
 
     pub fn bulk_enqueue_execution(&mut self, step:usize, executables: HashMap<usize, Executable>) -> &mut Self {
@@ -127,44 +115,8 @@ impl Registry {
     {
         let mut _self = self;
         {
-            let children = match &executable.through {
-                Some(through) => {
-                    let through_cid = ConfigUtil::calc_id(through.class_paths());
-                    let through_iid = _self.get_iid(through_cid).unwrap();
-                    let from_to = _self.iterish_from_to.get(&through_iid);
+            let children = executable.children(&_self.clone(), None).unwrap();
 
-                    // make up a vector of index
-                    let indices = if let Some((from, to)) = from_to {
-                        let mut indices = Vec::new();
-                        for i in *from..=*to {
-                            indices.push(i.to_string());
-                        }
-                        indices
-                    } else {
-                        Vec::new()
-                    };
-
-                    // get non-numeric mapping key as filled-or-non-filled unknown state
-                    let non_numeric_key_executables = through.children(&_self.clone(), Some(indices)).unwrap();
-                    let mut non_numeric_indice = Vec::new();
-                    for child in non_numeric_key_executables.clone() {
-                        let through_child_cid = ConfigUtil::calc_id(child.class_paths());
-                        let through_child_iid = _self.get_iid(through_child_cid).unwrap();
-                        let through_child_value = _self.values[&through_child_iid].clone();
-                        non_numeric_indice.push(through_child_value);
-                    }
-                    if non_numeric_indice.len() > 0 {
-                        let children = executable.children(&_self.clone(), Some(non_numeric_indice)).unwrap();
-                        children
-                    } else {
-                        non_numeric_key_executables.clone() // TODO: enqueue through first, after filling through, want to enqueue executable. But how?
-                    }
-                },
-                None => {
-                    let children = executable.children(&_self.clone(), None).unwrap();
-                    children    
-                }
-            }
             _self.queue_per_step.insert(step, children);
             _self
         }
